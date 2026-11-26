@@ -18,7 +18,15 @@ interface GetFeedBody {
   limit?: number;
 }
 
-const VALID_CATEGORIES = new Set(["all", "love", "funny", "college", "secrets", "thoughts"]);
+const VALID_CATEGORIES = new Set([
+  "all",
+  "love",
+  "funny",
+  "college",
+  "secrets",
+  "thoughts",
+  "notice",
+]);
 const PAGE_SIZE = 15;
 
 serve(async (req) => {

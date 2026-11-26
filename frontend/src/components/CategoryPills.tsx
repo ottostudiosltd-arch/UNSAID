@@ -5,7 +5,14 @@ interface CategoryPillsProps {
   onSelect: (category: CategoryFilter) => void;
 }
 
-const CATEGORIES: ConfessionCategory[] = ["love", "funny", "college", "secrets", "thoughts"];
+const CATEGORIES: ConfessionCategory[] = [
+  "love",
+  "funny",
+  "college",
+  "secrets",
+  "thoughts",
+  "notice",
+];
 
 export function CategoryPills({ selected, onSelect }: CategoryPillsProps) {
   return (

@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <!-- Soft sky-blue & lavender watercolor splash -->
+  <path d="M36 96C24 68 50 36 86 38C110 22 148 34 158 64C180 82 174 128 148 150C134 174 92 176 66 158C40 162 22 134 36 96Z" fill="#BAE6FD" opacity="0.72"/>
+  <circle cx="158" cy="48" r="9" fill="#93C5FD" opacity="0.6"/>
+  <circle cx="42" cy="144" r="6" fill="#F9A8D4" opacity="0.7"/>
+  <!-- Sparkles -->
+  <path d="M46 48L50 56L58 60L50 64L46 72L42 64L34 60L42 56Z" fill="#FFF8D6" stroke="#1E1B2E" stroke-width="2.8" stroke-linejoin="round"/>
+  <path d="M162 128L165 134L171 137L165 140L162 146L159 140L153 137L159 134Z" fill="#FFF8D6" stroke="#1E1B2E" stroke-width="2.5" stroke-linejoin="round"/>
+
+  <!-- Cute Megaphone -->
+  <g transform="rotate(-14 102 104)">
+    <!-- Handle -->
+    <path d="M72 118L66 144C64 150 70 154 76 152L84 148L88 122Z" fill="#60A5FA" stroke="#1E1B2E" stroke-width="4.5" stroke-linejoin="round"/>
+    <!-- Body cone -->
+    <path d="M60 92L134 64L142 134L66 116C54 113 50 96 60 92Z" fill="#FFFFFF" stroke="#1E1B2E" stroke-width="4.8" stroke-linejoin="round"/>
+    <!-- Front rim -->
+    <ellipse cx="138" cy="99" rx="12" ry="36" fill="#FF7EB6" stroke="#1E1B2E" stroke-width="4.8"/>
+    <ellipse cx="138" cy="99" rx="5" ry="18" fill="#1E1B2E" opacity="0.18"/>
+    <!-- Blue stripe on megaphone -->
+    <path d="M74 87L92 80L98 124L78 119Z" fill="#93C5FD" stroke="#1E1B2E" stroke-width="3.5" stroke-linejoin="round"/>
+    <!-- Sound waves -->
+    <path d="M158 82C165 88 166 98 160 106" stroke="#1E1B2E" stroke-width="4" stroke-linecap="round"/>
+    <path d="M168 72C178 83 179 102 170 114" stroke="#F59E0B" stroke-width="4" stroke-linecap="round"/>
+  </g>
+
+  <!-- Tiny cute white cat badge peeking on bottom left -->
+  <circle cx="56" cy="128" r="18" fill="#FFFFFF" stroke="#1E1B2E" stroke-width="4"/>
+  <path d="M42 116L45 103L54 111Z" fill="#FFFFFF" stroke="#1E1B2E" stroke-width="3.5" stroke-linejoin="round"/>
+  <path d="M70 116L67 103L58 111Z" fill="#FFFFFF" stroke="#1E1B2E" stroke-width="3.5" stroke-linejoin="round"/>
+  <circle cx="50" cy="127" r="2.5" fill="#1E1B2E"/>
+  <circle cx="62" cy="127" r="2.5" fill="#1E1B2E"/>
+  <ellipse cx="46" cy="132" rx="3" ry="1.8" fill="#FF9EBB"/>
+  <ellipse cx="66" cy="132" rx="3" ry="1.8" fill="#FF9EBB"/>
+  <path d="M53 132C55 134 57 134 59 132" stroke="#1E1B2E" stroke-width="2.2" stroke-linecap="round"/>
+</svg>

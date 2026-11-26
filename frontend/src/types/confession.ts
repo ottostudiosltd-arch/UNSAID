@@ -1,6 +1,12 @@
 import { assetUrl } from "../lib/assetUrl";
 
-export type ConfessionCategory = "love" | "funny" | "college" | "secrets" | "thoughts";
+export type ConfessionCategory =
+  | "love"
+  | "funny"
+  | "college"
+  | "secrets"
+  | "thoughts"
+  | "notice";
 export type CategoryFilter = "all" | ConfessionCategory;
 export type FeedSort = "trending" | "latest" | "most_discussed";
 export type CampusVibe = "happy" | "stressed" | "excited" | "other";
@@ -131,5 +137,16 @@ export const CATEGORY_META: Record<ConfessionCategory, CategoryMeta> = {
     cardBorder: "border-[#DFCEFF]",
     mascotSrc: assetUrl("assets/mascots/thoughts-girl.webp"),
     mascotAlt: "Thoughts illustration",
+  },
+  notice: {
+    id: "notice",
+    label: "Admin Notice",
+    emoji: "📢",
+    pillBg: "bg-[#DCEEFF]",
+    pillText: "text-[#1D4ED8]",
+    cardBg: "bg-gradient-to-br from-[#F7FBFF] via-[#EFF6FF] to-[#DFF0FF]",
+    cardBorder: "border-[#BFDBFE]",
+    mascotSrc: assetUrl("assets/mascots/admin-notice.svg"),
+    mascotAlt: "Official Admin Notice illustration",
   },
 };

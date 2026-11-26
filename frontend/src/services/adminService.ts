@@ -43,6 +43,7 @@ export interface AdminDashboardData {
     target_id: string;
     reason: string;
     details: string | null;
+    target_preview?: string | null;
     status: string;
     preserve_for_safety: boolean;
     created_at: string;

@@ -182,7 +182,9 @@ export function ConfessionDetails() {
               </span>
 
               <span className="inline-flex items-center gap-1 rounded-full bg-white/80 px-2.5 py-0.5 text-xs font-bold text-ink">
-                <span className="text-[11px]">🐱</span>
+                <span className="text-[11px]">
+                  {confession.category === "notice" ? "🛡️" : "🐱"}
+                </span>
                 <span>{confession.author_name || "Anonymous"}</span>
               </span>
 

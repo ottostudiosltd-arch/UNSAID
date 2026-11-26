@@ -21,14 +21,11 @@ interface AdminActionBody {
   enabled?: boolean;
   note?: string;
   collegeId?: string;
-  category?: string;
   vibe?: string;
   authorName?: string;
   text?: string;
   pollOptions?: string[];
 }
-
-const VALID_CATEGORIES = new Set(["love", "funny", "college", "secrets", "thoughts"]);
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -109,12 +106,46 @@ serve(async (req) => {
         supabase.rpc("get_database_health"),
       ]);
 
+      // Attach reported content text preview for easier single-post moderation
+      const reportRows = reports ?? [];
+      const confIds = reportRows
+        .filter((r) => r.target_type === "confession")
+        .map((r) => r.target_id);
+      const commentIds = reportRows
+        .filter((r) => r.target_type === "comment")
+        .map((r) => r.target_id);
+
+      const previewMap = new Map<string, string>();
+      if (confIds.length > 0) {
+        const { data: cPreviews } = await supabase
+          .from("confessions")
+          .select("id, content")
+          .in("id", confIds);
+        for (const c of cPreviews ?? []) {
+          previewMap.set(c.id, c.content);
+        }
+      }
+      if (commentIds.length > 0) {
+        const { data: cmPreviews } = await supabase
+          .from("comments")
+          .select("id, content")
+          .in("id", commentIds);
+        for (const cm of cmPreviews ?? []) {
+          previewMap.set(cm.id, cm.content);
+        }
+      }
+
+      const enrichedReports = reportRows.map((r) => ({
+        ...r,
+        target_preview: previewMap.get(r.target_id) ?? null,
+      }));
+
       return jsonResponse(req, {
         role: adminRow.role,
         colleges: colleges ?? [],
         allConfessions: allConfessions ?? [],
         pendingConfessions: pending ?? [],
-        reports: reports ?? [],
+        reports: enrichedReports,
         recentLogs: logs ?? [],
         health: health ?? null,
       });
@@ -122,7 +153,8 @@ serve(async (req) => {
 
     if (action === "admin_create_confession") {
       const collegeId = body.collegeId?.trim() ?? "";
-      if (!/^[0-9a-f-]{36}$/i.test(collegeId)) {
+      const isAllColleges = collegeId === "all";
+      if (!isAllColleges && !/^[0-9a-f-]{36}$/i.test(collegeId)) {
         return errorResponse(req, "INVALID_COLLEGE", "Please select a valid college.", 400);
       }
 
@@ -131,28 +163,35 @@ serve(async (req) => {
         return errorResponse(
           req,
           "INVALID_LENGTH",
-          "Post must be between 5 and 1,000 characters.",
+          "Notice must be between 5 and 1,000 characters.",
           400,
         );
       }
 
-      const { data: college } = await supabase
-        .from("colleges")
-        .select("id, code, name, short_name")
-        .eq("id", collegeId)
-        .maybeSingle();
+      let targetColleges: Array<{ id: string; code: string | null; name: string; short_name: string | null }> = [];
+      if (isAllColleges) {
+        const { data: list } = await supabase
+          .from("colleges")
+          .select("id, code, name, short_name")
+          .eq("is_active", true);
+        targetColleges = list ?? [];
+      } else {
+        const { data: single } = await supabase
+          .from("colleges")
+          .select("id, code, name, short_name")
+          .eq("id", collegeId)
+          .maybeSingle();
+        if (single) targetColleges = [single];
+      }
 
-      if (!college) {
+      if (targetColleges.length === 0) {
         return errorResponse(req, "NOT_FOUND", "Selected college not found.", 404);
       }
 
-      const category = VALID_CATEGORIES.has(body.category ?? "")
-        ? (body.category as string)
-        : "thoughts";
       const authorName =
         typeof body.authorName === "string" && body.authorName.trim()
           ? body.authorName.trim().slice(0, 28)
-          : "Anonymous";
+          : "Campus Admin";
       const vibe = inferVibe(text, body.vibe);
       const contentHash = await sha256Hex(text.toLowerCase().replace(/\s+/g, " "));
 
@@ -175,44 +214,48 @@ serve(async (req) => {
         }
       }
 
+      const rowsToInsert = targetColleges.map((c) => ({
+        college_id: c.id,
+        college_code: c.code ?? "",
+        college_name: c.short_name ?? c.name,
+        author_name: authorName,
+        category: "notice",
+        vibe,
+        content: text,
+        poll: pollPayload,
+        status: "approved",
+        session_hash: `admin:${userData.user.id}`,
+        content_hash: contentHash,
+      }));
+
       const { data: inserted, error: insertError } = await supabase
         .from("confessions")
-        .insert({
-          college_id: college.id,
-          college_code: college.code ?? "",
-          college_name: college.short_name ?? college.name,
-          author_name: authorName,
-          category,
-          vibe,
-          content: text,
-          poll: pollPayload,
-          status: "approved",
-          session_hash: `admin:${userData.user.id}`,
-          content_hash: contentHash,
-        })
-        .select("id, college_id")
-        .single();
+        .insert(rowsToInsert)
+        .select("id, college_id");
 
-      if (insertError || !inserted) {
-        return errorResponse(req, "INSERT_FAILED", "Could not create confession.", 500);
+      if (insertError || !inserted || inserted.length === 0) {
+        return errorResponse(req, "INSERT_FAILED", "Could not publish admin notice.", 500);
       }
 
       await supabase.from("moderation_logs").insert({
         admin_user_id: userData.user.id,
         action: "admin_create_confession",
-        target_type: "confession",
-        target_id: inserted.id,
-        college_id: inserted.college_id,
-        note: `Posted to ${college.code ?? college.name}`.slice(0, 250),
+        target_type: "notice",
+        target_id: inserted[0].id,
+        college_id: isAllColleges ? null : inserted[0].college_id,
+        note: (isAllColleges
+          ? `Admin Notice published to all ${inserted.length} colleges`
+          : `Admin Notice published to ${targetColleges[0].code ?? targetColleges[0].name}`
+        ).slice(0, 250),
       });
 
-      return jsonResponse(req, { ok: true, id: inserted.id }, 201);
+      return jsonResponse(req, { ok: true, count: inserted.length }, 201);
     }
 
     if (action === "delete_confession") {
       const targetId = body.targetId?.trim() ?? "";
       if (!/^[0-9a-f-]{36}$/i.test(targetId)) {
-        return errorResponse(req, "INVALID_ID", "Invalid confession ID.", 400);
+        return errorResponse(req, "INVALID_ID", "Invalid post ID.", 400);
       }
 
       const { data: deleted, error } = await supabase
@@ -223,8 +266,16 @@ serve(async (req) => {
         .maybeSingle();
 
       if (error || !deleted) {
-        return errorResponse(req, "NOT_FOUND", "Confession not found.", 404);
+        return errorResponse(req, "NOT_FOUND", "Post not found.", 404);
       }
+
+      // Auto-resolve any open reports targeting this deleted confession
+      await supabase
+        .from("reports")
+        .update({ status: "resolved" })
+        .eq("target_type", "confession")
+        .eq("target_id", deleted.id)
+        .in("status", ["open", "reviewed"]);
 
       await supabase.from("moderation_logs").insert({
         admin_user_id: userData.user.id,

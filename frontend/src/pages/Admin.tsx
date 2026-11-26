@@ -15,6 +15,7 @@ import {
 import { Link } from "react-router-dom";
 import { CharacterCounter } from "../components/CharacterCounter";
 import { formatRelativeTime } from "../hooks/useCampusSession";
+import { assetUrl } from "../lib/assetUrl";
 import { supabase } from "../lib/supabase";
 import {
   adminSignIn,
@@ -23,19 +24,7 @@ import {
   runAdminAction,
   type AdminDashboardData,
 } from "../services/adminService";
-import {
-  CATEGORY_META,
-  type CampusVibe,
-  type ConfessionCategory,
-} from "../types/confession";
-
-const CATEGORIES: ConfessionCategory[] = [
-  "love",
-  "funny",
-  "college",
-  "secrets",
-  "thoughts",
-];
+import type { CampusVibe } from "../types/confession";
 
 const VIBES: Array<{ id: CampusVibe; label: string; emoji: string }> = [
   { id: "happy", label: "Happy", emoji: "😊" },
@@ -56,9 +45,8 @@ export function Admin() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [statusMsg, setStatusMsg] = useState<string | null>(null);
 
-  // Admin post composer state
-  const [postCollegeId, setPostCollegeId] = useState("");
-  const [postCategory, setPostCategory] = useState<ConfessionCategory>("college");
+  // Admin Notice composer state
+  const [postCollegeId, setPostCollegeId] = useState("all");
   const [postVibe, setPostVibe] = useState<CampusVibe>("happy");
   const [postAuthor, setPostAuthor] = useState("");
   const [postText, setPostText] = useState("");
@@ -172,9 +160,8 @@ export function Admin() {
       await runAdminAction({
         action: "admin_create_confession",
         collegeId: postCollegeId,
-        category: postCategory,
         vibe: postVibe,
-        authorName: postAuthor.trim() || "Anonymous",
+        authorName: postAuthor.trim() || "Campus Admin",
         text: postText.trim(),
         pollOptions: cleanPoll,
       });
@@ -182,10 +169,10 @@ export function Admin() {
       setPostAuthor("");
       setIncludePoll(false);
       setPollOptions(["", ""]);
-      setStatusMsg("New post published live!");
+      setStatusMsg("Official Admin Notice published!");
       await loadDashboard(true);
     } catch (err) {
-      setAuthError(err instanceof Error ? err.message : "Failed to publish post.");
+      setAuthError(err instanceof Error ? err.message : "Failed to publish notice.");
     } finally {
       setPosting(false);
     }
@@ -381,26 +368,41 @@ export function Admin() {
               </section>
             )}
 
-            {/* Admin Direct Post Composer */}
-            <section className="rounded-[24px] border border-white bg-white/95 p-5 shadow-card">
-              <h2 className="font-display text-lg font-bold text-ink">
-                Post from Admin Panel
-              </h2>
-              <p className="text-xs font-medium text-muted">
-                Publish a confession or poll directly to any campus feed.
-              </p>
+            {/* Admin Notice Composer */}
+            <section className="relative overflow-hidden rounded-[24px] border border-[#BFDBFE] bg-gradient-to-br from-[#F7FBFF] via-[#EFF6FF] to-[#DFF0FF] p-5 shadow-card">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <span className="inline-flex items-center gap-1 rounded-full bg-[#DCEEFF] px-3 py-1 text-xs font-extrabold text-[#1D4ED8]">
+                    <span>📢</span>
+                    <span>Official Admin Notice</span>
+                  </span>
+                  <h2 className="mt-2 font-display text-xl font-bold text-ink">
+                    Publish Admin Notice
+                  </h2>
+                  <p className="text-xs font-medium text-muted">
+                    Send an official campus announcement or poll to one college or all campuses.
+                  </p>
+                </div>
+
+                <img
+                  src={assetUrl("assets/mascots/admin-notice.svg")}
+                  alt="Official Admin Notice sticker"
+                  className="h-20 w-20 shrink-0 object-contain"
+                />
+              </div>
 
               <form onSubmit={handleAdminCreatePost} className="mt-4 space-y-4">
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div>
                     <label className="text-[11px] font-extrabold uppercase tracking-wider text-muted">
-                      Target College
+                      Target Campus
                     </label>
                     <select
                       value={postCollegeId}
                       onChange={(e) => setPostCollegeId(e.target.value)}
-                      className="mt-1 w-full rounded-2xl border border-[#ECE4FA] bg-[#FCF9FF] px-3.5 py-2 text-xs font-bold text-ink focus:border-pastel-lavenderDeep focus:outline-none"
+                      className="mt-1 w-full rounded-2xl border border-white bg-white/90 px-3.5 py-2 text-xs font-bold text-ink focus:border-[#60A5FA] focus:outline-none"
                     >
+                      <option value="all">All Colleges (Broadcast to all 18)</option>
                       {dashboard.colleges.map((c) => (
                         <option key={c.id} value={c.id}>
                           {c.code} — {c.short_name ?? c.name}
@@ -411,42 +413,23 @@ export function Admin() {
 
                   <div>
                     <label className="text-[11px] font-extrabold uppercase tracking-wider text-muted">
-                      Display Name (optional)
+                      Notice Sender Label
                     </label>
                     <input
                       type="text"
                       maxLength={28}
                       value={postAuthor}
                       onChange={(e) => setPostAuthor(e.target.value)}
-                      placeholder="Anonymous (leave blank)"
-                      className="mt-1 w-full rounded-2xl border border-[#ECE4FA] bg-[#FCF9FF] px-3.5 py-2 text-xs font-bold text-ink focus:border-pastel-lavenderDeep focus:outline-none"
+                      placeholder="Campus Admin (default)"
+                      className="mt-1 w-full rounded-2xl border border-white bg-white/90 px-3.5 py-2 text-xs font-bold text-ink focus:border-[#60A5FA] focus:outline-none"
                     />
                   </div>
                 </div>
 
-                <div className="flex flex-wrap gap-2">
-                  {CATEGORIES.map((cat) => {
-                    const meta = CATEGORY_META[cat];
-                    const active = postCategory === cat;
-                    return (
-                      <button
-                        key={cat}
-                        type="button"
-                        onClick={() => setPostCategory(cat)}
-                        className={`inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-bold ${
-                          active
-                            ? `${meta.pillBg} ${meta.pillText} border-ink/30`
-                            : "border-[#ECE4FA] bg-white text-muted"
-                        }`}
-                      >
-                        <span>{meta.label}</span>
-                        <span>{meta.emoji}</span>
-                      </button>
-                    );
-                  })}
-
-                  <span className="mx-1 self-center text-xs text-muted">|</span>
-
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-[11px] font-extrabold uppercase tracking-wider text-muted">
+                    Mood:
+                  </span>
                   {VIBES.map((v) => (
                     <button
                       key={v.id}
@@ -455,7 +438,7 @@ export function Admin() {
                       className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-bold ${
                         postVibe === v.id
                           ? "border-ink bg-ink text-white"
-                          : "border-[#ECE4FA] bg-white text-muted"
+                          : "border-white bg-white/85 text-muted"
                       }`}
                     >
                       <span>{v.emoji}</span>
@@ -467,7 +450,7 @@ export function Admin() {
                 <div>
                   <div className="mb-1.5 flex items-center justify-between">
                     <span className="text-[11px] font-extrabold uppercase tracking-wider text-muted">
-                      Post Content
+                      Notice Message
                     </span>
                     <CharacterCounter current={postText.length} max={1000} />
                   </div>
@@ -476,21 +459,21 @@ export function Admin() {
                     maxLength={1000}
                     value={postText}
                     onChange={(e) => setPostText(e.target.value)}
-                    placeholder="Write a campus confession or announcement..."
-                    className="w-full resize-none rounded-2xl border border-[#ECE4FA] bg-[#FCF9FF] p-3 text-sm font-medium text-ink focus:border-pastel-lavenderDeep focus:outline-none"
+                    placeholder="Write an official campus notice, event update, or announcement..."
+                    className="w-full resize-none rounded-2xl border border-white bg-white/90 p-3 text-sm font-medium text-ink focus:border-[#60A5FA] focus:outline-none"
                   />
                 </div>
 
-                <div className="rounded-2xl border border-[#ECE4FA] bg-[#FCF9FF] p-3">
+                <div className="rounded-2xl border border-white bg-white/80 p-3">
                   <div className="flex items-center justify-between">
                     <span className="inline-flex items-center gap-1.5 text-xs font-extrabold text-ink">
-                      <BarChart3 className="h-4 w-4 text-[#5D37B8]" />
-                      <span>Attach Poll</span>
+                      <BarChart3 className="h-4 w-4 text-[#1D4ED8]" />
+                      <span>Attach Poll (optional)</span>
                     </span>
                     <button
                       type="button"
                       onClick={() => setIncludePoll((p) => !p)}
-                      className="rounded-full bg-pastel-lavender px-3 py-1 text-xs font-bold text-[#5D37B8]"
+                      className="rounded-full bg-[#DCEEFF] px-3 py-1 text-xs font-bold text-[#1D4ED8]"
                     >
                       {includePoll ? "Remove Poll" : "+ Add Poll"}
                     </button>
@@ -510,7 +493,7 @@ export function Admin() {
                               )
                             }
                             placeholder={`Option ${idx + 1}`}
-                            className="flex-1 rounded-xl border border-[#E6DCFB] bg-white px-3 py-1.5 text-xs font-bold text-ink"
+                            className="flex-1 rounded-xl border border-[#BFDBFE] bg-white px-3 py-1.5 text-xs font-bold text-ink"
                           />
                           {pollOptions.length > 2 && (
                             <button
@@ -529,7 +512,7 @@ export function Admin() {
                         <button
                           type="button"
                           onClick={() => setPollOptions((prev) => [...prev, ""])}
-                          className="inline-flex items-center gap-1 rounded-full bg-white px-2.5 py-1 text-[11px] font-bold text-[#5D37B8]"
+                          className="inline-flex items-center gap-1 rounded-full bg-white px-2.5 py-1 text-[11px] font-bold text-[#1D4ED8]"
                         >
                           <Plus className="h-3 w-3" /> Add option
                         </button>
@@ -542,10 +525,10 @@ export function Admin() {
                   <button
                     type="submit"
                     disabled={posting || postText.trim().length < 5}
-                    className="inline-flex items-center gap-2 rounded-full bg-ink px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-[#2C2742] disabled:opacity-50"
+                    className="inline-flex items-center gap-2 rounded-full bg-[#1D4ED8] px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-[#1E40AF] disabled:opacity-50"
                   >
                     <Send className="h-3.5 w-3.5" />
-                    <span>{posting ? "Publishing..." : "Publish Post"}</span>
+                    <span>{posting ? "Publishing..." : "Publish Admin Notice"}</span>
                   </button>
                 </div>
               </form>
@@ -744,8 +727,15 @@ export function Admin() {
                           {rep.target_id}
                         </span>
                       </div>
+                      {rep.target_preview && (
+                        <div className="mt-2 rounded-xl border border-white bg-white/90 p-2.5 text-xs font-semibold text-ink">
+                          "{rep.target_preview}"
+                        </div>
+                      )}
                       {rep.details && (
-                        <p className="mt-1.5 font-medium text-ink">{rep.details}</p>
+                        <p className="mt-1.5 font-medium text-muted">
+                          Reporter note: {rep.details}
+                        </p>
                       )}
                       <div className="mt-2.5 flex flex-wrap gap-2">
                         <button
