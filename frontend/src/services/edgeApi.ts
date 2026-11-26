@@ -19,7 +19,7 @@ export function isLiveBackendEnabled(): boolean {
 export async function invokeEdge<TResponse>(
   functionName: string,
   body: Record<string, unknown>,
-  options: { requireCampusToken?: boolean } = {},
+  options: { requireCampusToken?: boolean; bearerJwt?: string } = {},
 ): Promise<TResponse> {
   if (!supabase) {
     throw new ApiError(
@@ -39,6 +39,10 @@ export async function invokeEdge<TResponse>(
       throw new ApiError("UNAUTHORIZED", "Please enter your college code first.", 401);
     }
     headers["x-college-token"] = access.token;
+  }
+
+  if (options.bearerJwt) {
+    headers["Authorization"] = `Bearer ${options.bearerJwt}`;
   }
 
   const { data, error } = await supabase.functions.invoke<TResponse>(functionName, {

@@ -4,6 +4,7 @@ import { getCampusAccess } from "./lib/session";
 import { Feed } from "./pages/Feed";
 import { Welcome } from "./pages/Welcome";
 
+const Admin = lazy(() => import("./pages/Admin").then((m) => ({ default: m.Admin })));
 const ConfessionDetails = lazy(() =>
   import("./pages/ConfessionDetails").then((m) => ({ default: m.ConfessionDetails })),
 );
@@ -99,6 +100,7 @@ export function App() {
               </RequireCampus>
             }
           />
+          <Route path="/admin" element={<Admin />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>

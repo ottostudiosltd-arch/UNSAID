@@ -8,11 +8,21 @@ import {
   hashIpSignal,
   hashSessionId,
   parseJsonBody,
+  sha256Hex,
   signCollegeToken,
 } from "../_shared/security.ts";
 
 interface VerifyCollegeBody {
   code?: string;
+}
+
+function timingSafeHexEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) {
+    diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return diff === 0;
 }
 
 serve(async (req) => {
@@ -53,6 +63,17 @@ serve(async (req) => {
       );
     }
 
+    // Check secret server-side Admin Gate hash (never stored in frontend)
+    const adminGateHash = Deno.env.get("ADMIN_GATE_HASH")?.trim().toLowerCase() ?? "";
+    if (adminGateHash.length === 64) {
+      const candidateAdminHash = await sha256Hex(`admin_gate:${rawCode.toUpperCase()}`);
+      if (timingSafeHexEqual(candidateAdminHash, adminGateHash)) {
+        return jsonResponse(req, {
+          mode: "admin_gate",
+        });
+      }
+    }
+
     const codeHash = await hashCollegeCode(rawCode);
     const { data: college, error } = await supabase
       .from("colleges")
@@ -84,6 +105,7 @@ serve(async (req) => {
     );
 
     return jsonResponse(req, {
+      mode: "college",
       token,
       expiresAt: new Date(Date.now() + ttlSeconds * 1000).toISOString(),
       college: {

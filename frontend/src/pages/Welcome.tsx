@@ -33,7 +33,11 @@ export function Welcome({ onSuccess }: WelcomeProps) {
 
     setLoading(true);
     try {
-      await verifyCollegeCode(parsed.data);
+      const result = await verifyCollegeCode(parsed.data);
+      if (result.kind === "admin_gate") {
+        navigate("/admin");
+        return;
+      }
       onSuccess();
       navigate("/feed", { replace: true });
     } catch (err) {
