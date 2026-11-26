@@ -330,10 +330,10 @@ export function ConfessionDetails() {
             {comments.length === 0 ? (
               <div className="rounded-2xl border border-white bg-white/80 p-6 text-center">
                 <img
-                  src={assetUrl("assets/mascots/sleeping-cat.svg")}
+                  src={assetUrl("assets/mascots/quiet-paperplane.webp")}
                   alt=""
                   aria-hidden="true"
-                  className="mx-auto w-28"
+                  className="mx-auto w-36"
                 />
                 <p className="mt-1 text-xs font-bold text-muted">
                   No replies yet — start the conversation kindly!

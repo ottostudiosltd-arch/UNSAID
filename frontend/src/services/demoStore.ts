@@ -6,7 +6,6 @@ import {
   setCampusAccess,
 } from "../lib/session";
 import type {
-  CampusNotification,
   CampusVibe,
   CampusVibesSummary,
   CategoryFilter,
@@ -19,7 +18,6 @@ import type {
 const DEMO_CONFESSIONS_KEY = "unsaid_demo_confessions_v2";
 const DEMO_COMMENTS_KEY = "unsaid_demo_comments_v2";
 const DEMO_LIKES_KEY = "unsaid_demo_likes_v2";
-const DEMO_NOTIFS_KEY = "unsaid_demo_notifs_v1";
 
 const now = Date.now();
 const hoursAgo = (h: number) => new Date(now - h * 3600 * 1000).toISOString();
@@ -186,33 +184,6 @@ const INITIAL_COMMENTS: Record<string, CommentItem[]> = {
     },
   ],
 };
-
-const INITIAL_NOTIFICATIONS: CampusNotification[] = [
-  {
-    id: "n-1",
-    title: "Trending on your campus 🔥",
-    body: "Someone replied to a confession in Love ♡.",
-    timeAgo: "12m ago",
-    unread: true,
-    linkTo: "/confession/conf-raisoni-1",
-  },
-  {
-    id: "n-2",
-    title: "Live Poll Active 📊",
-    body: "Vote on \"Current attendance situation?\" in Funny.",
-    timeAgo: "45m ago",
-    unread: true,
-    linkTo: "/confession/conf-raisoni-4",
-  },
-  {
-    id: "n-3",
-    title: "Explore across Pune campuses ✨",
-    body: "Check out new stories from PCCOE, MIT AOE & IIIT Pune in Explore.",
-    timeAgo: "2h ago",
-    unread: false,
-    linkTo: "/explore",
-  },
-];
 
 function readConfessions(): Confession[] {
   try {
@@ -471,21 +442,4 @@ export function demoVotePoll(confessionId: string, optionId: string): Confession
   savePollVote(confessionId, optionId);
 
   return updatedConfession;
-}
-
-export function getNotifications(): CampusNotification[] {
-  try {
-    const raw = localStorage.getItem(DEMO_NOTIFS_KEY);
-    if (raw) return JSON.parse(raw) as CampusNotification[];
-  } catch {
-    // ignore
-  }
-  localStorage.setItem(DEMO_NOTIFS_KEY, JSON.stringify(INITIAL_NOTIFICATIONS));
-  return INITIAL_NOTIFICATIONS;
-}
-
-export function markAllNotificationsRead(): CampusNotification[] {
-  const next = getNotifications().map((n) => ({ ...n, unread: false }));
-  localStorage.setItem(DEMO_NOTIFS_KEY, JSON.stringify(next));
-  return next;
 }

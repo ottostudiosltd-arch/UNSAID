@@ -133,6 +133,7 @@ export function Feed({ mode = "campus", defaultSort = "latest" }: FeedProps) {
     <AppShell
       college={access?.college ?? null}
       vibes={vibes}
+      notices={items.filter((item) => item.category === "notice")}
       topBarSlot={<CategoryPills selected={category} onSelect={setCategory} />}
     >
       {/* Mobile category pills */}
@@ -251,9 +252,9 @@ export function Feed({ mode = "campus", defaultSort = "latest" }: FeedProps) {
       ) : items.length === 0 ? (
         <div className="rounded-[28px] border border-white bg-white/90 p-8 text-center shadow-card">
           <img
-            src={assetUrl("assets/mascots/sleeping-cat.svg")}
+            src={assetUrl("assets/mascots/quiet-paperplane.webp")}
             alt="No confessions yet"
-            className="mx-auto w-40"
+            className="mx-auto w-48"
           />
           <h2 className="mt-2 font-display text-xl font-bold text-ink">
             Quiet on campus right now...

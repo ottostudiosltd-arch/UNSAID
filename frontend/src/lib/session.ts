@@ -107,3 +107,20 @@ export function savePollVote(confessionId: string, optionId: string): Record<str
   localStorage.setItem(POLL_VOTES_KEY, JSON.stringify(next));
   return next;
 }
+
+const READ_NOTIFS_KEY = "unsaid_read_notifs_v1";
+
+export function getReadNotificationIds(): string[] {
+  try {
+    const raw = localStorage.getItem(READ_NOTIFS_KEY);
+    return raw ? (JSON.parse(raw) as string[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function markNotificationIdsRead(ids: string[]): string[] {
+  const merged = Array.from(new Set([...getReadNotificationIds(), ...ids])).slice(-100);
+  localStorage.setItem(READ_NOTIFS_KEY, JSON.stringify(merged));
+  return merged;
+}

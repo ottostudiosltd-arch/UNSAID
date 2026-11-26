@@ -92,10 +92,10 @@ export function Saved() {
       ) : items.length === 0 ? (
         <div className="rounded-[28px] border border-white bg-white/90 p-8 text-center shadow-card">
           <img
-            src={assetUrl("assets/mascots/sleeping-cat.svg")}
+            src={assetUrl("assets/mascots/quiet-paperplane.webp")}
             alt=""
             aria-hidden="true"
-            className="mx-auto w-36"
+            className="mx-auto w-44"
           />
           <h2 className="mt-2 font-display text-lg font-bold text-ink">
             No saved confessions yet

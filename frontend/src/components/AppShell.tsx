@@ -13,13 +13,20 @@ import {
   X,
 } from "lucide-react";
 import { Link, NavLink } from "react-router-dom";
+import { formatRelativeTime } from "../hooks/useCampusSession";
 import { assetUrl } from "../lib/assetUrl";
-import { getNotifications, markAllNotificationsRead } from "../services/demoStore";
-import type { CampusNotification, CampusVibesSummary, CollegeInfo } from "../types/confession";
+import { getReadNotificationIds, markNotificationIdsRead } from "../lib/session";
+import type {
+  CampusNotification,
+  CampusVibesSummary,
+  CollegeInfo,
+  Confession,
+} from "../types/confession";
 
 interface AppShellProps {
   college: CollegeInfo | null;
   vibes?: CampusVibesSummary;
+  notices?: Confession[];
   topBarSlot?: ReactNode;
   children: ReactNode;
 }
@@ -32,11 +39,24 @@ const DEFAULT_VIBES: CampusVibesSummary = {
   sampleSize: 0,
 };
 
-export function AppShell({ college, vibes = DEFAULT_VIBES, topBarSlot, children }: AppShellProps) {
+export function AppShell({
+  college,
+  vibes = DEFAULT_VIBES,
+  notices = [],
+  topBarSlot,
+  children,
+}: AppShellProps) {
   const [notifOpen, setNotifOpen] = useState(false);
-  const [notifications, setNotifications] = useState<CampusNotification[]>(() =>
-    getNotifications(),
-  );
+  const [readIds, setReadIds] = useState<string[]>(() => getReadNotificationIds());
+
+  const notifications: CampusNotification[] = notices.map((n) => ({
+    id: n.id,
+    title: `${n.author_name || "Campus Admin"} 📢`,
+    body: n.content.length > 90 ? `${n.content.slice(0, 90)}...` : n.content,
+    timeAgo: formatRelativeTime(n.created_at),
+    unread: !readIds.includes(n.id),
+    linkTo: `/confession/${n.id}`,
+  }));
 
   const unreadCount = notifications.filter((n) => n.unread).length;
 
@@ -49,7 +69,7 @@ export function AppShell({ college, vibes = DEFAULT_VIBES, topBarSlot, children 
   ];
 
   function handleMarkAllRead() {
-    setNotifications(markAllNotificationsRead());
+    setReadIds(markNotificationIdsRead(notifications.map((n) => n.id)));
   }
 
   return (
@@ -346,24 +366,33 @@ export function AppShell({ college, vibes = DEFAULT_VIBES, topBarSlot, children 
             </div>
 
             <div className="mt-3 max-h-80 space-y-2 overflow-y-auto">
-              {notifications.map((item) => (
-                <Link
-                  key={item.id}
-                  to={item.linkTo ?? "/feed"}
-                  onClick={() => setNotifOpen(false)}
-                  className={`block rounded-2xl border p-3 transition ${
-                    item.unread
-                      ? "border-[#E3D6FF] bg-pastel-lavender/35"
-                      : "border-[#F3EEFA] bg-white hover:bg-[#FCF9FF]"
-                  }`}
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-xs font-extrabold text-ink">{item.title}</span>
-                    <span className="text-[10px] font-semibold text-muted">{item.timeAgo}</span>
-                  </div>
-                  <p className="mt-1 text-xs font-medium text-muted">{item.body}</p>
-                </Link>
-              ))}
+              {notifications.length === 0 ? (
+                <div className="rounded-2xl border border-[#F3EEFA] bg-[#FCF9FF] p-5 text-center">
+                  <p className="text-xs font-bold text-ink">No new notifications</p>
+                  <p className="mt-1 text-[11px] font-medium text-muted">
+                    Official campus notices will appear here.
+                  </p>
+                </div>
+              ) : (
+                notifications.map((item) => (
+                  <Link
+                    key={item.id}
+                    to={item.linkTo ?? "/feed"}
+                    onClick={() => setNotifOpen(false)}
+                    className={`block rounded-2xl border p-3 transition ${
+                      item.unread
+                        ? "border-[#E3D6FF] bg-pastel-lavender/35"
+                        : "border-[#F3EEFA] bg-white hover:bg-[#FCF9FF]"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs font-extrabold text-ink">{item.title}</span>
+                      <span className="text-[10px] font-semibold text-muted">{item.timeAgo}</span>
+                    </div>
+                    <p className="mt-1 text-xs font-medium text-muted">{item.body}</p>
+                  </Link>
+                ))
+              )}
             </div>
           </div>
         </div>
