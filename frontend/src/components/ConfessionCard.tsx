@@ -37,7 +37,7 @@ export function ConfessionCard({
       className={`confession-card border ${meta.cardBorder} ${meta.cardBg} p-4 sm:p-5 shadow-card`}
     >
       {/* Top row: category badge + author name + relative timestamp + optional college badge + menu */}
-      <div className="relative z-10 flex items-center justify-between gap-2">
+      <div className="relative z-30 flex items-start justify-between gap-2">
         <div className="flex flex-wrap items-center gap-2">
           <span
             className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-extrabold ${meta.pillBg} ${meta.pillText}`}
@@ -79,7 +79,7 @@ export function ConfessionCard({
           {menuOpen && (
             <div
               onMouseLeave={() => setMenuOpen(false)}
-              className="absolute right-0 top-9 z-30 w-40 rounded-2xl border border-[#ECE4FA] bg-white p-1.5 shadow-lg"
+              className="absolute bottom-10 right-0 z-50 w-40 rounded-2xl border border-[#ECE4FA] bg-white p-1.5 shadow-xl"
             >
               <button
                 type="button"
@@ -157,14 +157,16 @@ export function ConfessionCard({
         </div>
       )}
 
-      {/* Mascot Sticker on Right */}
-      <img
-        src={meta.mascotSrc}
-        alt={meta.mascotAlt}
-        aria-hidden="true"
-        loading="lazy"
-        className="card-mascot-img absolute -bottom-1 right-1 z-0 h-28 w-28 opacity-95 sm:right-3 sm:h-36 sm:w-36"
-      />
+      {/* Mascot Sticker on Right (clipped inside rounded card) */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-[24px]">
+        <img
+          src={meta.mascotSrc}
+          alt={meta.mascotAlt}
+          aria-hidden="true"
+          loading="lazy"
+          className="card-mascot-img absolute -bottom-1 right-1 z-0 h-28 w-28 opacity-95 sm:right-3 sm:h-36 sm:w-36"
+        />
+      </div>
 
       {/* Footer row: Likes & Comments only */}
       <div className="relative z-10 mt-5 flex items-center gap-4 text-xs font-bold text-ink/80 sm:text-sm">
