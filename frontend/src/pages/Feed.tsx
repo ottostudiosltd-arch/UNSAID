@@ -6,6 +6,7 @@ import { CategoryPills } from "../components/CategoryPills";
 import { ConfessionCard } from "../components/ConfessionCard";
 import { OFFICIAL_COLLEGES } from "../data/colleges";
 import { useCampusSession } from "../hooks/useCampusSession";
+import { assetUrl } from "../lib/assetUrl";
 import {
   fetchFeed,
   toggleConfessionLike,
@@ -250,7 +251,7 @@ export function Feed({ mode = "campus", defaultSort = "latest" }: FeedProps) {
       ) : items.length === 0 ? (
         <div className="rounded-[28px] border border-white bg-white/90 p-8 text-center shadow-card">
           <img
-            src="/assets/mascots/sleeping-cat.svg"
+            src={assetUrl("assets/mascots/sleeping-cat.svg")}
             alt="No confessions yet"
             className="mx-auto w-40"
           />

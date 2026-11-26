@@ -1,3 +1,5 @@
+import { assetUrl } from "../lib/assetUrl";
+
 export type ConfessionCategory = "love" | "funny" | "college" | "secrets" | "thoughts";
 export type CategoryFilter = "all" | ConfessionCategory;
 export type FeedSort = "trending" | "latest" | "most_discussed";
@@ -83,7 +85,7 @@ export const CATEGORY_META: Record<ConfessionCategory, CategoryMeta> = {
     pillText: "text-[#B62B66]",
     cardBg: "bg-gradient-to-br from-[#FFF9FB] via-[#FFF6FA] to-[#FFE8F2]",
     cardBorder: "border-[#FFD6E8]",
-    mascotSrc: "/assets/mascots/love-boy.webp",
+    mascotSrc: assetUrl("assets/mascots/love-boy.webp"),
     mascotAlt: "Love confession illustration",
   },
   funny: {
@@ -94,7 +96,7 @@ export const CATEGORY_META: Record<ConfessionCategory, CategoryMeta> = {
     pillText: "text-[#16794F]",
     cardBg: "bg-gradient-to-br from-[#FAFFFC] via-[#F4FDF8] to-[#E2F9EC]",
     cardBorder: "border-[#C7F0DB]",
-    mascotSrc: "/assets/mascots/funny-cat.webp",
+    mascotSrc: assetUrl("assets/mascots/funny-cat.webp"),
     mascotAlt: "Funny cat illustration",
   },
   college: {
@@ -105,7 +107,7 @@ export const CATEGORY_META: Record<ConfessionCategory, CategoryMeta> = {
     pillText: "text-[#5D37B8]",
     cardBg: "bg-gradient-to-br from-[#FCF9FF] via-[#F7F3FF] to-[#E9F9F1]",
     cardBorder: "border-[#E3D6FF]",
-    mascotSrc: "/assets/mascots/college-pizza.svg",
+    mascotSrc: assetUrl("assets/mascots/college-pizza.svg"),
     mascotAlt: "College campus illustration",
   },
   secrets: {
@@ -116,7 +118,7 @@ export const CATEGORY_META: Record<ConfessionCategory, CategoryMeta> = {
     pillText: "text-[#9A5B00]",
     cardBg: "bg-gradient-to-br from-[#FFFDF7] via-[#FFF9EA] to-[#FFEDC2]",
     cardBorder: "border-[#FDE09B]",
-    mascotSrc: "/assets/mascots/secrets-lock.svg",
+    mascotSrc: assetUrl("assets/mascots/secrets-lock.svg"),
     mascotAlt: "Secrets padlock illustration",
   },
   thoughts: {
@@ -127,7 +129,7 @@ export const CATEGORY_META: Record<ConfessionCategory, CategoryMeta> = {
     pillText: "text-[#5B3EB0]",
     cardBg: "bg-gradient-to-br from-[#FDFBFF] via-[#F7F2FF] to-[#EDE2FF]",
     cardBorder: "border-[#DFCEFF]",
-    mascotSrc: "/assets/mascots/thoughts-girl.webp",
+    mascotSrc: assetUrl("assets/mascots/thoughts-girl.webp"),
     mascotAlt: "Thoughts illustration",
   },
 };

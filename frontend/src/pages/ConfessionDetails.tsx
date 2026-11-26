@@ -13,6 +13,7 @@ import { AppShell } from "../components/AppShell";
 import { CharacterCounter } from "../components/CharacterCounter";
 import { CommentCard } from "../components/CommentCard";
 import { formatRelativeTime, useCampusSession } from "../hooks/useCampusSession";
+import { assetUrl } from "../lib/assetUrl";
 import { commentSchema } from "../lib/validation";
 import { fetchConfessionDetail, submitComment } from "../services/commentService";
 import { toggleConfessionLike, voteOnPoll } from "../services/confessionService";
@@ -327,7 +328,7 @@ export function ConfessionDetails() {
             {comments.length === 0 ? (
               <div className="rounded-2xl border border-white bg-white/80 p-6 text-center">
                 <img
-                  src="/assets/mascots/sleeping-cat.svg"
+                  src={assetUrl("assets/mascots/sleeping-cat.svg")}
                   alt=""
                   aria-hidden="true"
                   className="mx-auto w-28"

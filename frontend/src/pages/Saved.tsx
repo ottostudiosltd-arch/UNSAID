@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { AppShell } from "../components/AppShell";
 import { ConfessionCard } from "../components/ConfessionCard";
 import { useCampusSession } from "../hooks/useCampusSession";
+import { assetUrl } from "../lib/assetUrl";
 import {
   fetchFeed,
   toggleConfessionLike,
@@ -91,7 +92,7 @@ export function Saved() {
       ) : items.length === 0 ? (
         <div className="rounded-[28px] border border-white bg-white/90 p-8 text-center shadow-card">
           <img
-            src="/assets/mascots/sleeping-cat.svg"
+            src={assetUrl("assets/mascots/sleeping-cat.svg")}
             alt=""
             aria-hidden="true"
             className="mx-auto w-36"

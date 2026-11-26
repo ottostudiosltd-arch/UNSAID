@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { ArrowRight, Lock, ShieldCheck, Sparkles } from "lucide-react";
 import { Navigate, useNavigate } from "react-router-dom";
+import { assetUrl } from "../lib/assetUrl";
 import { getCampusAccess } from "../lib/session";
 import { collegeCodeSchema } from "../lib/validation";
 import { verifyCollegeCode } from "../services/collegeService";
@@ -48,7 +49,7 @@ export function Welcome({ onSuccess }: WelcomeProps) {
     <div className="flex min-h-screen items-center justify-center px-4 py-10">
       <div className="relative w-full max-w-md pt-10">
         <img
-          src="/assets/mascots/peeking-cat.svg"
+          src={assetUrl("assets/mascots/peeking-cat.svg")}
           alt="UNSAID mascot"
           className="pointer-events-none relative z-20 mx-auto -mb-4 w-44 drop-shadow-sm"
         />
@@ -56,7 +57,7 @@ export function Welcome({ onSuccess }: WelcomeProps) {
         <div className="relative z-10 rounded-[32px] border border-white bg-white/90 p-6 shadow-shell backdrop-blur-md sm:p-8">
           <div className="flex justify-center">
             <img
-              src="/assets/mascots/unsaid-logo.webp"
+              src={assetUrl("assets/mascots/unsaid-logo.webp")}
               alt="UNSAID. Your Campus. Your Stories."
               className="h-28 w-auto object-contain"
             />

@@ -2,6 +2,7 @@ import { Building2, Hash, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AppShell } from "../components/AppShell";
 import { useCampusSession } from "../hooks/useCampusSession";
+import { assetUrl } from "../lib/assetUrl";
 
 export function Profile() {
   const navigate = useNavigate();
@@ -9,8 +10,8 @@ export function Profile() {
 
   const isMale = genderTheme === "male";
   const mascotSrc = isMale
-    ? "/assets/mascots/love-boy.webp"
-    : "/assets/mascots/thoughts-girl.webp";
+    ? assetUrl("assets/mascots/love-boy.webp")
+    : assetUrl("assets/mascots/thoughts-girl.webp");
 
   function handleSwitchCampus() {
     exitCampus();

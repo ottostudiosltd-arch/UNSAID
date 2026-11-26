@@ -36,7 +36,7 @@ export function App() {
   const [, setAuthTick] = useState(0);
 
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={import.meta.env.BASE_URL}>
       <Suspense fallback={<PageLoader />}>
         <Routes>
           <Route

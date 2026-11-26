@@ -13,6 +13,7 @@ import {
   X,
 } from "lucide-react";
 import { Link, NavLink } from "react-router-dom";
+import { assetUrl } from "../lib/assetUrl";
 import { getNotifications, markAllNotificationsRead } from "../services/demoStore";
 import type { CampusNotification, CampusVibesSummary, CollegeInfo } from "../types/confession";
 
@@ -66,7 +67,7 @@ export function AppShell({ college, vibes = DEFAULT_VIBES, topBarSlot, children 
 
         <div className="flex items-center gap-2">
           <img
-            src="/assets/mascots/peeking-cat.svg"
+            src={assetUrl("assets/mascots/peeking-cat.svg")}
             alt=""
             aria-hidden="true"
             className="h-14 w-24 object-contain"
@@ -90,7 +91,7 @@ export function AppShell({ college, vibes = DEFAULT_VIBES, topBarSlot, children 
         {/* FIXED LEFT SIDEBAR (Desktop) */}
         <aside className="relative hidden w-[240px] shrink-0 flex-col pt-9 lg:sticky lg:top-5 lg:flex lg:h-[calc(100vh-2.5rem)]">
           <img
-            src="/assets/mascots/peeking-cat.svg"
+            src={assetUrl("assets/mascots/peeking-cat.svg")}
             alt="UNSAID mascot"
             className="pointer-events-none absolute left-1/2 top-0 z-20 w-36 -translate-x-1/2"
           />
@@ -142,7 +143,7 @@ export function AppShell({ college, vibes = DEFAULT_VIBES, topBarSlot, children 
 
             <div className="mt-2 flex justify-center">
               <img
-                src="/assets/mascots/sleeping-cat.svg"
+                src={assetUrl("assets/mascots/sleeping-cat.svg")}
                 alt=""
                 aria-hidden="true"
                 className="animate-float-slow w-40 select-none"
@@ -296,7 +297,7 @@ export function AppShell({ college, vibes = DEFAULT_VIBES, topBarSlot, children 
               Stay Kind. ❤️
             </p>
             <img
-              src="/assets/mascots/peeking-cat.svg"
+              src={assetUrl("assets/mascots/peeking-cat.svg")}
               alt=""
               aria-hidden="true"
               className="pointer-events-none absolute -bottom-2 right-1 w-24"
