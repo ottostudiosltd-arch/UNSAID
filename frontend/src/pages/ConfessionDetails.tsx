@@ -7,8 +7,9 @@ import {
   Heart,
   MessageCircle,
   Send,
+  Trash2,
 } from "lucide-react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { AppShell } from "../components/AppShell";
 import { CharacterCounter } from "../components/CharacterCounter";
 import { CommentCard } from "../components/CommentCard";
@@ -16,14 +17,23 @@ import { formatRelativeTime, useCampusSession } from "../hooks/useCampusSession"
 import { assetUrl } from "../lib/assetUrl";
 import { checkContentAllowed } from "../lib/moderation";
 import { commentSchema } from "../lib/validation";
-import { fetchConfessionDetail, submitComment } from "../services/commentService";
-import { toggleConfessionLike, voteOnPoll } from "../services/confessionService";
+import {
+  deleteOwnComment,
+  fetchConfessionDetail,
+  submitComment,
+} from "../services/commentService";
+import {
+  deleteOwnConfession,
+  toggleConfessionLike,
+  voteOnPoll,
+} from "../services/confessionService";
 import { CATEGORY_META, type CommentItem, type Confession } from "../types/confession";
 
 const MAX_COMMENTS = 100;
 
 export function ConfessionDetails() {
   const { id = "" } = useParams();
+  const navigate = useNavigate();
   const { access, savedIds, pollVotes, toggleSave, recordPollVote } =
     useCampusSession();
 
@@ -39,6 +49,8 @@ export function ConfessionDetails() {
   const [replyText, setReplyText] = useState("");
   const [posting, setPosting] = useState(false);
   const [replyError, setReplyError] = useState<string | null>(null);
+  const [confirmDeletePost, setConfirmDeletePost] = useState(false);
+  const [deletingPost, setDeletingPost] = useState(false);
   const replyLockRef = useRef(false);
 
   const loadDetail = useCallback(
@@ -135,6 +147,34 @@ export function ConfessionDetails() {
     }
   }
 
+  async function handleDeletePost() {
+    if (!confession || deletingPost) return;
+    setDeletingPost(true);
+    try {
+      await deleteOwnConfession(confession.id);
+      if (savedIds.includes(confession.id)) {
+        toggleSave(confession.id);
+      }
+      navigate("/feed", { replace: true });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not delete confession.");
+      setDeletingPost(false);
+      setConfirmDeletePost(false);
+    }
+  }
+
+  async function handleDeleteComment(commentId: string) {
+    try {
+      const res = await deleteOwnComment(commentId);
+      setComments((prev) => prev.filter((c) => c.id !== commentId));
+      setConfession((prev) =>
+        prev ? { ...prev, comments_count: res.commentsCount } : prev,
+      );
+    } catch (err) {
+      setReplyError(err instanceof Error ? err.message : "Could not delete comment.");
+    }
+  }
+
   const saved = confession ? savedIds.includes(confession.id) : false;
   const meta = confession
     ? CATEGORY_META[confession.category] ?? CATEGORY_META.thoughts
@@ -170,13 +210,38 @@ export function ConfessionDetails() {
               <Bookmark className="h-3.5 w-3.5" />
               <span>{saved ? "Saved" : "Save"}</span>
             </button>
-            <Link
-              to={`/report/confession/${confession.id}`}
-              className="inline-flex items-center gap-1.5 rounded-full border border-white bg-white/90 px-3 py-1.5 text-xs font-bold text-[#C81E4B] hover:bg-[#FFE4EC] dark:border-white/15 dark:bg-[#1B1829] dark:text-[#FF8EAE] dark:hover:bg-[#3A1C2A]"
-            >
-              <Flag className="h-3.5 w-3.5" />
-              <span>Report</span>
-            </Link>
+            {confession.is_owner ? (
+              <button
+                type="button"
+                disabled={deletingPost}
+                onClick={() => {
+                  if (confirmDeletePost) {
+                    void handleDeletePost();
+                  } else {
+                    setConfirmDeletePost(true);
+                  }
+                }}
+                onMouseLeave={() => setConfirmDeletePost(false)}
+                className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-bold transition ${
+                  confirmDeletePost
+                    ? "border-[#D81B60] bg-[#D81B60] text-white"
+                    : "border-white bg-white/90 text-[#C81E4B] hover:bg-[#FFE4EC] dark:border-white/15 dark:bg-[#1B1829] dark:text-[#FF8EAE] dark:hover:bg-[#3A1C2A]"
+                }`}
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                <span>
+                  {deletingPost ? "Deleting..." : confirmDeletePost ? "Confirm Delete?" : "Delete"}
+                </span>
+              </button>
+            ) : (
+              <Link
+                to={`/report/confession/${confession.id}`}
+                className="inline-flex items-center gap-1.5 rounded-full border border-white bg-white/90 px-3 py-1.5 text-xs font-bold text-[#C81E4B] hover:bg-[#FFE4EC] dark:border-white/15 dark:bg-[#1B1829] dark:text-[#FF8EAE] dark:hover:bg-[#3A1C2A]"
+              >
+                <Flag className="h-3.5 w-3.5" />
+                <span>Report</span>
+              </Link>
+            )}
           </div>
         )}
       </div>
@@ -366,7 +431,12 @@ export function ConfessionDetails() {
             ) : (
               <>
                 {comments.map((comment, idx) => (
-                  <CommentCard key={comment.id} comment={comment} index={idx} />
+                  <CommentCard
+                    key={comment.id}
+                    comment={comment}
+                    index={idx}
+                    onDelete={handleDeleteComment}
+                  />
                 ))}
 
                 {hasMoreComments && nextCursor && (

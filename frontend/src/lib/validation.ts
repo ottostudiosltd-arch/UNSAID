@@ -3,9 +3,18 @@ import { z } from "zod";
 export const collegeCodeSchema = z
   .string()
   .trim()
-  .min(4, "Enter your 5-digit college code (e.g. 06155).")
+  .min(3, "Enter a valid college code (e.g. 06155).")
   .max(12, "College code is too long.")
   .regex(/^[a-zA-Z0-9-]+$/, "Use numbers or letters only.");
+
+export const addCollegeSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(3, "Enter the college name (at least 3 characters).")
+    .max(100, "College name must be 100 characters or less."),
+  code: collegeCodeSchema,
+});
 
 export const confessionSchema = z.object({
   category: z.enum(["love", "funny", "college", "secrets", "thoughts"]),

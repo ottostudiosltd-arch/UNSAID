@@ -12,6 +12,7 @@ interface AdminActionBody {
     | "delete_confession"
     | "admin_create_confession"
     | "hide_comment"
+    | "delete_comment"
     | "resolve_report"
     | "dismiss_report"
     | "toggle_submissions"
@@ -374,6 +375,54 @@ serve(async (req) => {
       });
 
       return jsonResponse(req, { ok: true });
+    }
+
+    if (action === "delete_comment") {
+      const targetId = body.targetId?.trim() ?? "";
+      if (!/^[0-9a-f-]{36}$/i.test(targetId)) {
+        return errorResponse(req, "INVALID_ID", "Invalid comment ID.", 400);
+      }
+
+      const { data: rpcResult, error: rpcError } = await supabase.rpc(
+        "delete_comment_atomic",
+        {
+          p_comment_id: targetId,
+          p_session_hash: `admin:${userData.user.id}`,
+          p_is_admin: true,
+        },
+      );
+
+      if (rpcError || !rpcResult) {
+        return errorResponse(req, "DELETE_FAILED", "Could not delete comment.", 500);
+      }
+
+      const resObj = rpcResult as {
+        ok: boolean;
+        code?: string;
+        message?: string;
+        college_id?: string;
+        comments_count?: number;
+      };
+
+      if (!resObj.ok) {
+        return errorResponse(
+          req,
+          resObj.code ?? "NOT_FOUND",
+          resObj.message ?? "Comment not found.",
+          404,
+        );
+      }
+
+      await supabase.from("moderation_logs").insert({
+        admin_user_id: userData.user.id,
+        action: "delete_comment",
+        target_type: "comment",
+        target_id: targetId,
+        college_id: resObj.college_id ?? null,
+        note,
+      });
+
+      return jsonResponse(req, { ok: true, commentsCount: resObj.comments_count ?? 0 });
     }
 
     if (action === "resolve_report" || action === "dismiss_report") {

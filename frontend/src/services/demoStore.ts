@@ -1,4 +1,8 @@
-import { findCollegeByCode } from "../data/colleges";
+import {
+  findCollegeByCode,
+  OFFICIAL_COLLEGES,
+  type OfficialCollege,
+} from "../data/colleges";
 import {
   getCampusAccess,
   getPollVotesMap,
@@ -224,11 +228,74 @@ function readLikedIds(): string[] {
   }
 }
 
+const DEMO_CUSTOM_COLLEGES_KEY = "unsaid_demo_custom_colleges_v1";
+
+function readCustomColleges(): OfficialCollege[] {
+  try {
+    const raw = localStorage.getItem(DEMO_CUSTOM_COLLEGES_KEY);
+    return raw ? (JSON.parse(raw) as OfficialCollege[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function demoListColleges(): OfficialCollege[] {
+  const map = new Map<string, OfficialCollege>();
+  for (const c of [...OFFICIAL_COLLEGES, ...readCustomColleges()]) {
+    map.set(c.code.toUpperCase(), c);
+  }
+  return Array.from(map.values()).sort((a, b) => a.code.localeCompare(b.code));
+}
+
+export function demoRegisterCollege(name: string, rawCode: string) {
+  const cleanName = name.trim().replace(/\s+/g, " ");
+  const code = rawCode.trim().toUpperCase();
+  const existing = demoListColleges().find((c) => c.code.toUpperCase() === code);
+  if (existing) {
+    throw new Error(
+      `Code ${code} is already registered (${existing.name}). Select it from the list or enter the code.`,
+    );
+  }
+  const shortName = cleanName.length <= 28 ? cleanName : cleanName.slice(0, 28).trim();
+  const slugBase = cleanName
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 40);
+  const newItem: OfficialCollege = {
+    code,
+    name: cleanName,
+    shortName,
+    slug: `${slugBase || "campus"}-${code.toLowerCase()}`,
+  };
+  localStorage.setItem(
+    DEMO_CUSTOM_COLLEGES_KEY,
+    JSON.stringify([...readCustomColleges(), newItem]),
+  );
+
+  const college = {
+    id: newItem.slug,
+    code: newItem.code,
+    name: newItem.name,
+    shortName: newItem.shortName,
+    slug: newItem.slug,
+  };
+  setCampusAccess({
+    token: `campus-session-${newItem.code}`,
+    expiresAt: new Date(Date.now() + 12 * 3600 * 1000).toISOString(),
+    college,
+  });
+  return { college };
+}
+
 export function demoVerifyCollege(rawCode: string) {
-  const matched = findCollegeByCode(rawCode);
+  const normalized = rawCode.trim().toUpperCase();
+  const matched =
+    findCollegeByCode(normalized) ??
+    readCustomColleges().find((c) => c.code.toUpperCase() === normalized);
   if (!matched) {
     throw new Error(
-      "Invalid college code. Please enter a valid official campus code (e.g. 06155).",
+      "Invalid college code. Pick your college from the list or add a new college.",
     );
   }
   const college = {
@@ -359,6 +426,7 @@ export function demoCreateConfession(input: {
         : null,
     likes_count: 0,
     comments_count: 0,
+    is_owner: true,
     created_at: new Date().toISOString(),
   };
 
@@ -384,6 +452,7 @@ export function demoCreateComment(confessionId: string, text: string) {
     confession_id: confessionId,
     author_name: "Anonymous",
     content: text.trim(),
+    is_owner: true,
     created_at: new Date().toISOString(),
   };
   map[confessionId] = [...existing, comment];
@@ -393,6 +462,43 @@ export function demoCreateComment(confessionId: string, text: string) {
   writeConfessions(all);
 
   return { comment, commentsCount: all[idx].comments_count };
+}
+
+export function demoDeleteConfession(confessionId: string) {
+  const all = readConfessions();
+  const next = all.filter((c) => c.id !== confessionId);
+  writeConfessions(next);
+  const map = readCommentsMap();
+  delete map[confessionId];
+  writeCommentsMap(map);
+  return { ok: true, id: confessionId };
+}
+
+export function demoDeleteComment(commentId: string) {
+  const map = readCommentsMap();
+  const all = readConfessions();
+  let targetConfessionId = "";
+  let nextCount = 0;
+
+  for (const [confId, list] of Object.entries(map)) {
+    if (list.some((c) => c.id === commentId)) {
+      targetConfessionId = confId;
+      map[confId] = list.filter((c) => c.id !== commentId);
+      break;
+    }
+  }
+  writeCommentsMap(map);
+
+  if (targetConfessionId) {
+    const idx = all.findIndex((c) => c.id === targetConfessionId);
+    if (idx !== -1) {
+      nextCount = Math.max(0, all[idx].comments_count - 1);
+      all[idx] = { ...all[idx], comments_count: nextCount };
+      writeConfessions(all);
+    }
+  }
+
+  return { ok: true, id: commentId, confessionId: targetConfessionId, commentsCount: nextCount };
 }
 
 export function demoToggleLike(confessionId: string) {

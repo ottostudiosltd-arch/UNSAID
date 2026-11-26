@@ -7,13 +7,17 @@ import {
   type PointerEvent as ReactPointerEvent,
   type TouchEvent as ReactTouchEvent,
 } from "react";
-import { ChevronDown, ChevronUp, Flag, Loader2, Send, X } from "lucide-react";
+import { ChevronDown, ChevronUp, Flag, Loader2, Send, Trash2, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { formatRelativeTime } from "../hooks/useCampusSession";
 import { assetUrl } from "../lib/assetUrl";
 import { checkContentAllowed } from "../lib/moderation";
 import { commentSchema } from "../lib/validation";
-import { fetchConfessionDetail, submitComment } from "../services/commentService";
+import {
+  deleteOwnComment,
+  fetchConfessionDetail,
+  submitComment,
+} from "../services/commentService";
 import { CATEGORY_META, type CommentItem, type Confession } from "../types/confession";
 
 const MAX_COMMENTS = 100;
@@ -49,6 +53,8 @@ export function CommentsSheet({
   const [replyText, setReplyText] = useState("");
   const [posting, setPosting] = useState(false);
   const [replyError, setReplyError] = useState<string | null>(null);
+  const [confirmDeleteCommentId, setConfirmDeleteCommentId] = useState<string | null>(null);
+  const [deletingCommentId, setDeletingCommentId] = useState<string | null>(null);
 
   const replyLockRef = useRef(false);
   const listRef = useRef<HTMLDivElement | null>(null);
@@ -120,6 +126,8 @@ export function CommentsSheet({
     setNextCursor(null);
     setReplyText("");
     setReplyError(null);
+    setConfirmDeleteCommentId(null);
+    setDeletingCommentId(null);
 
     const frame = requestAnimationFrame(() => setVisible(true));
     void loadComments(confessionId, null, false);
@@ -283,6 +291,23 @@ export function CommentsSheet({
     } finally {
       replyLockRef.current = false;
       setPosting(false);
+    }
+  }
+
+  async function handleDeleteComment(commentId: string) {
+    if (!confessionId || deletingCommentId) return;
+    setDeletingCommentId(commentId);
+    setError(null);
+    try {
+      const res = await deleteOwnComment(commentId);
+      setComments((prev) => prev.filter((c) => c.id !== commentId));
+      setCommentsCount(res.commentsCount);
+      onCommentCountChangeRef.current?.(confessionId, res.commentsCount);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not delete comment.");
+    } finally {
+      setDeletingCommentId(null);
+      setConfirmDeleteCommentId(null);
     }
   }
 
@@ -459,15 +484,48 @@ export function CommentsSheet({
                           </span>
                         </div>
 
-                        <Link
-                          to={`/report/comment/${comment.id}`}
-                          onClick={onClose}
-                          title="Report comment"
-                          className="inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-semibold text-muted transition hover:bg-[#FFE4EC] hover:text-[#C81E4B] dark:text-[#A49DBB] dark:hover:bg-[#3A1C2A] dark:hover:text-[#FF8EAE]"
-                        >
-                          <Flag className="h-2.5 w-2.5" />
-                          <span>Report</span>
-                        </Link>
+                        {comment.is_owner ? (
+                          <button
+                            type="button"
+                            disabled={deletingCommentId === comment.id}
+                            onClick={() => {
+                              if (confirmDeleteCommentId === comment.id) {
+                                void handleDeleteComment(comment.id);
+                              } else {
+                                setConfirmDeleteCommentId(comment.id);
+                              }
+                            }}
+                            onMouseLeave={() => {
+                              if (confirmDeleteCommentId === comment.id) {
+                                setConfirmDeleteCommentId(null);
+                              }
+                            }}
+                            className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold transition ${
+                              confirmDeleteCommentId === comment.id
+                                ? "bg-[#D81B60] text-white"
+                                : "text-[#C81E4B] hover:bg-[#FFE4EC] dark:text-[#FF8EAE] dark:hover:bg-[#3A1C2A]"
+                            }`}
+                          >
+                            <Trash2 className="h-2.5 w-2.5" />
+                            <span>
+                              {deletingCommentId === comment.id
+                                ? "Deleting..."
+                                : confirmDeleteCommentId === comment.id
+                                ? "Confirm?"
+                                : "Delete"}
+                            </span>
+                          </button>
+                        ) : (
+                          <Link
+                            to={`/report/comment/${comment.id}`}
+                            onClick={onClose}
+                            title="Report comment"
+                            className="inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-semibold text-muted transition hover:bg-[#FFE4EC] hover:text-[#C81E4B] dark:text-[#A49DBB] dark:hover:bg-[#3A1C2A] dark:hover:text-[#FF8EAE]"
+                          >
+                            <Flag className="h-2.5 w-2.5" />
+                            <span>Report</span>
+                          </Link>
+                        )}
                       </div>
 
                       <p className="mt-0.5 whitespace-pre-wrap break-words text-[13.5px] leading-snug text-ink/90 dark:text-[#EFEBF8]">

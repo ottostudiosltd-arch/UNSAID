@@ -71,7 +71,7 @@ serve(async (req) => {
     let query = supabase
       .from("confessions")
       .select(
-        "id, college_code, college_name, author_name, category, vibe, content, poll, likes_count, comments_count, created_at",
+        "id, college_code, college_name, author_name, category, vibe, content, poll, likes_count, comments_count, session_hash, created_at",
       )
       .eq("status", "approved");
 
@@ -135,20 +135,20 @@ serve(async (req) => {
       return true;
     });
 
-    const items = dedupedRows.slice(0, limit);
+    const slicedItems = dedupedRows.slice(0, limit);
     const hasMore = dedupedRows.length > limit;
 
     let nextCursor: string | null = null;
-    if (hasMore && items.length > 0) {
+    if (hasMore && slicedItems.length > 0) {
       if (sort === "latest") {
-        nextCursor = items[items.length - 1].created_at;
+        nextCursor = slicedItems[slicedItems.length - 1].created_at;
       } else {
         const currentOffset = Number(body.cursor ?? 0);
-        nextCursor = String((Number.isFinite(currentOffset) ? currentOffset : 0) + items.length);
+        nextCursor = String((Number.isFinite(currentOffset) ? currentOffset : 0) + slicedItems.length);
       }
     }
 
-    const ids = items.map((i) => i.id);
+    const ids = slicedItems.map((i) => i.id);
     let likedIds: string[] = [];
     if (ids.length > 0) {
       const { data: likes } = await supabase
@@ -183,6 +183,11 @@ serve(async (req) => {
       other: Math.round((counts.other / totalVibes) * 100),
       sampleSize: (vibeRows ?? []).length,
     };
+
+    const items = slicedItems.map(({ session_hash: rowSessionHash, ...rest }) => ({
+      ...rest,
+      is_owner: rowSessionHash === sessionHash,
+    }));
 
     return jsonResponse(req, {
       items,

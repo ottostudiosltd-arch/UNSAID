@@ -7,6 +7,7 @@ import { ConfessionCard } from "../components/ConfessionCard";
 import { useCampusSession } from "../hooks/useCampusSession";
 import { assetUrl } from "../lib/assetUrl";
 import {
+  deleteOwnConfession,
   fetchFeed,
   toggleConfessionLike,
   voteOnPoll,
@@ -75,6 +76,15 @@ export function Saved() {
     }
   }
 
+  async function handleDeleteConfession(confessionId: string) {
+    await deleteOwnConfession(confessionId);
+    setItems((prev) => prev.filter((item) => item.id !== confessionId));
+    setActiveCommentPost((prev) => (prev?.id === confessionId ? null : prev));
+    if (savedIds.includes(confessionId)) {
+      toggleSave(confessionId);
+    }
+  }
+
   return (
     <AppShell college={access?.college ?? null}>
       <div className="mb-4 flex items-center gap-2.5">
@@ -128,6 +138,7 @@ export function Saved() {
               onToggleSave={toggleSave}
               onVotePoll={(cId, oId) => void handleVotePoll(cId, oId)}
               onOpenComments={(post) => setActiveCommentPost(post)}
+              onDeleteConfession={(id) => handleDeleteConfession(id)}
             />
           ))}
         </div>

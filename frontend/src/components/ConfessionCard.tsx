@@ -1,5 +1,13 @@
 import { useState } from "react";
-import { Bookmark, CheckCircle2, Flag, Heart, MessageCircle, MoreVertical } from "lucide-react";
+import {
+  Bookmark,
+  CheckCircle2,
+  Flag,
+  Heart,
+  MessageCircle,
+  MoreVertical,
+  Trash2,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 import { formatRelativeTime } from "../hooks/useCampusSession";
 import { CATEGORY_META, type Confession } from "../types/confession";
@@ -14,6 +22,7 @@ interface ConfessionCardProps {
   onToggleSave: (id: string) => void;
   onVotePoll?: (confessionId: string, optionId: string) => void;
   onOpenComments?: (confession: Confession) => void;
+  onDeleteConfession?: (id: string) => void | Promise<void>;
 }
 
 export function ConfessionCard({
@@ -26,13 +35,28 @@ export function ConfessionCard({
   onToggleSave,
   onVotePoll,
   onOpenComments,
+  onDeleteConfession,
 }: ConfessionCardProps) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const meta = CATEGORY_META[confession.category] ?? CATEGORY_META.thoughts;
 
   const totalVotes = confession.poll
     ? confession.poll.options.reduce((sum, opt) => sum + opt.votes, 0)
     : 0;
+
+  async function handleConfirmDelete() {
+    if (!onDeleteConfession || deleting) return;
+    setDeleting(true);
+    try {
+      await onDeleteConfession(confession.id);
+      setMenuOpen(false);
+      setConfirmDelete(false);
+    } finally {
+      setDeleting(false);
+    }
+  }
 
   return (
     <article
@@ -72,7 +96,12 @@ export function ConfessionCard({
           <button
             type="button"
             aria-label="More options"
-            onClick={() => setMenuOpen((prev) => !prev)}
+            onClick={() => {
+              setMenuOpen((prev) => {
+                if (prev) setConfirmDelete(false);
+                return !prev;
+              });
+            }}
             className="flex h-8 w-8 items-center justify-center rounded-full text-muted transition hover:bg-white/80 hover:text-ink dark:text-[#A49DBB] dark:hover:bg-white/10 dark:hover:text-white"
           >
             <MoreVertical className="h-4 w-4" />
@@ -80,8 +109,11 @@ export function ConfessionCard({
 
           {menuOpen && (
             <div
-              onMouseLeave={() => setMenuOpen(false)}
-              className="absolute bottom-10 right-0 z-50 w-40 rounded-2xl border border-[#ECE4FA] bg-white p-1.5 shadow-xl dark:border-white/15 dark:bg-[#1E1B2E]"
+              onMouseLeave={() => {
+                setMenuOpen(false);
+                setConfirmDelete(false);
+              }}
+              className="absolute bottom-10 right-0 z-50 w-44 rounded-2xl border border-[#ECE4FA] bg-white p-1.5 shadow-xl dark:border-white/15 dark:bg-[#1E1B2E]"
             >
               <button
                 type="button"
@@ -94,14 +126,43 @@ export function ConfessionCard({
                 <Bookmark className="h-3.5 w-3.5" />
                 <span>{saved ? "Remove Saved" : "Save Post"}</span>
               </button>
-              <Link
-                to={`/report/confession/${confession.id}`}
-                onClick={() => setMenuOpen(false)}
-                className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-xs font-bold text-[#C81E4B] hover:bg-[#FFE4EC] dark:text-[#FF8EAE] dark:hover:bg-[#3A1C2A]"
-              >
-                <Flag className="h-3.5 w-3.5" />
-                <span>Report Post</span>
-              </Link>
+
+              {confession.is_owner && onDeleteConfession ? (
+                <button
+                  type="button"
+                  disabled={deleting}
+                  onClick={() => {
+                    if (confirmDelete) {
+                      void handleConfirmDelete();
+                    } else {
+                      setConfirmDelete(true);
+                    }
+                  }}
+                  className={`flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-xs font-bold transition ${
+                    confirmDelete
+                      ? "bg-[#D81B60] text-white"
+                      : "text-[#C81E4B] hover:bg-[#FFE4EC] dark:text-[#FF8EAE] dark:hover:bg-[#3A1C2A]"
+                  }`}
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  <span>
+                    {deleting
+                      ? "Deleting..."
+                      : confirmDelete
+                      ? "Confirm Delete?"
+                      : "Delete Post"}
+                  </span>
+                </button>
+              ) : (
+                <Link
+                  to={`/report/confession/${confession.id}`}
+                  onClick={() => setMenuOpen(false)}
+                  className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-xs font-bold text-[#C81E4B] hover:bg-[#FFE4EC] dark:text-[#FF8EAE] dark:hover:bg-[#3A1C2A]"
+                >
+                  <Flag className="h-3.5 w-3.5" />
+                  <span>Report Post</span>
+                </Link>
+              )}
             </div>
           )}
         </div>

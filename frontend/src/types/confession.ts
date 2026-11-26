@@ -44,6 +44,7 @@ export interface Confession {
   poll?: ConfessionPoll | null;
   likes_count: number;
   comments_count: number;
+  is_owner?: boolean;
   created_at: string;
 }
 
@@ -52,6 +53,7 @@ export interface CommentItem {
   confession_id: string;
   author_name?: string;
   content: string;
+  is_owner?: boolean;
   created_at: string;
 }
 

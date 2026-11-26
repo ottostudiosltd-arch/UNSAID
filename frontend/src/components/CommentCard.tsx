@@ -1,4 +1,5 @@
-import { Flag } from "lucide-react";
+import { useState } from "react";
+import { Flag, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { formatRelativeTime } from "../hooks/useCampusSession";
 import type { CommentItem } from "../types/confession";
@@ -6,12 +7,26 @@ import type { CommentItem } from "../types/confession";
 interface CommentCardProps {
   comment: CommentItem;
   index: number;
+  onDelete?: (commentId: string) => void | Promise<void>;
 }
 
 const AVATARS = ["🐱", "🐼", "🦊", "🐰", "🐻", "🐥"];
 
-export function CommentCard({ comment, index }: CommentCardProps) {
+export function CommentCard({ comment, index, onDelete }: CommentCardProps) {
   const avatar = AVATARS[index % AVATARS.length];
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  async function handleDelete() {
+    if (!onDelete || deleting) return;
+    setDeleting(true);
+    try {
+      await onDelete(comment.id);
+    } finally {
+      setDeleting(false);
+      setConfirmDelete(false);
+    }
+  }
 
   return (
     <div className="rounded-2xl border border-[#EFE7FA] bg-white/90 p-3.5 shadow-sm dark:border-white/10 dark:bg-[#1B1829]">
@@ -26,14 +41,37 @@ export function CommentCard({ comment, index }: CommentCardProps) {
           </span>
         </div>
 
-        <Link
-          to={`/report/comment/${comment.id}`}
-          title="Report comment"
-          className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-semibold text-muted transition hover:bg-[#FFE4EC] hover:text-[#C81E4B] dark:text-[#A49DBB] dark:hover:bg-[#3A1C2A] dark:hover:text-[#FF8EAE]"
-        >
-          <Flag className="h-3 w-3" />
-          <span>Report</span>
-        </Link>
+        {comment.is_owner && onDelete ? (
+          <button
+            type="button"
+            disabled={deleting}
+            onClick={() => {
+              if (confirmDelete) {
+                void handleDelete();
+              } else {
+                setConfirmDelete(true);
+              }
+            }}
+            onMouseLeave={() => setConfirmDelete(false)}
+            className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-semibold transition ${
+              confirmDelete
+                ? "bg-[#D81B60] text-white"
+                : "text-[#C81E4B] hover:bg-[#FFE4EC] dark:text-[#FF8EAE] dark:hover:bg-[#3A1C2A]"
+            }`}
+          >
+            <Trash2 className="h-3 w-3" />
+            <span>{deleting ? "Deleting..." : confirmDelete ? "Confirm?" : "Delete"}</span>
+          </button>
+        ) : (
+          <Link
+            to={`/report/comment/${comment.id}`}
+            title="Report comment"
+            className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-semibold text-muted transition hover:bg-[#FFE4EC] hover:text-[#C81E4B] dark:text-[#A49DBB] dark:hover:bg-[#3A1C2A] dark:hover:text-[#FF8EAE]"
+          >
+            <Flag className="h-3 w-3" />
+            <span>Report</span>
+          </Link>
+        )}
       </div>
 
       <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-relaxed text-ink dark:text-[#EFEBF8]">

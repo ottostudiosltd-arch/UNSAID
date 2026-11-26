@@ -189,13 +189,15 @@ export type ModerationResult = {
 
 function normalizeForModeration(input: string): string {
   return input
+    .normalize("NFKC")
     .replace(/[\u200B-\u200D\uFEFF]/g, "")
     .toLowerCase()
+    // Convert ! to i only when sandwiched inside a word so "mc!" doesn't turn into "mci"
+    .replace(/([a-z0-9])!([a-z0-9])/g, "$1i$2")
     .replace(/@/g, "a")
     .replace(/4/g, "a")
     .replace(/3/g, "e")
     .replace(/1/g, "i")
-    .replace(/!/g, "i")
     .replace(/0/g, "o")
     .replace(/\$/g, "s")
     .replace(/5/g, "s")
@@ -205,19 +207,37 @@ function normalizeForModeration(input: string): string {
     .trim();
 }
 
+function collapseRepeatedLetters(normalized: string): string {
+  return normalized.replace(/([a-z])\1+/g, "$1");
+}
+
 const PROFANITY_AND_SEXUAL_PATTERNS: RegExp[] = [
-  // Sexual / explicit terms
-  /\b(sex|sexy|sexx+|sexual|sexting|porn|porno|pornography|xxx|nude|nudes|naked|horny|boobs|tits|nipple|vagina|penis|dick|cock|pussy|blowjob|handjob|masturbate|masturbation|cum|cumshot|orgasm|erotic|escort|onlyfans|rape|rapist|molest|incest)\b/i,
+  // Sexual / explicit English terms
+  /\b(sex|sexy|sexx+|sexual|sexting|porn|porno|pornography|xxx|nude|nudes|naked|horny|boobs|tits|nipple|vagina|penis|dick|cock|pussy|blowjob|handjob|masturbate|masturbation|cum|cumshot|orgasm|erotic|escort|onlyfans|rape|rapist|molest|incest|milf|hentai|nsfw)\b/i,
   // English profanity & slurs
-  /\b(fuck|fucker|fucking|fucked|fck|fuk|motherfucker|mf|shit|bullshit|bitch|bitches|ass|asses|asshole|assholes|bastard|slut|whore|cunt|prick|twat|wanker|stfu|suck my)\b/i,
-  // Hindi / Hinglish gaaliyan & slurs
-  /\b(mc|bc|bkl|bsdk|mkc|bkc|bhosdike|bhosdi|bhosda|madarchod|maderchod|madharchod|behenchod|bhenchod|behen ke lode|chutiya|chutiye|chutiyapa|chut|chooot|lund|lauda|lavda|loda|lawda|gaand|gand|gandu|randi|randwa|harami|haramzada|kamina|kamine|kutte|kutta|kutti|saala|saale|suar|tatti|jhatu|jhaat|chinaal|chinal|pataka|maal)\b/i,
-  // Spaced / masked evasions (e.g., "s e x", "m c", "b c", "f u c k")
-  /\bs[\s._*-]+e[\s._*-]+x\b/i,
-  /\bf[\s._*-]+u[\s._*-]+c[\s._*-]+k\b/i,
-  /\bm[\s._*-]+c\b/i,
-  /\bb[\s._*-]+c\b/i,
-  /\bb[\s._*-]+s[\s._*-]+d[\s._*-]+k\b/i,
+  /\b(fuck|fucker|fucking|fucked|fck|fuk|fk|motherfucker|mf|shit|bullshit|bitch|bitches|ass|asses|asshole|assholes|bastard|slut|whore|cunt|prick|twat|wanker|stfu|suck my|suck my dick|dickhead|dumbass|jackass|nigga|nigger)\b/i,
+  // Hindi / Hinglish gaaliyan, inflections & variations
+  /\b(mc|bc|bkl|bsdk|bsdkw|bsdwk|bhosdk|mkc|bkc|bkp|lkb|tmkc|pkmb|nkc|madarchod|maderchod|madharchod|maadarchod|mdarchod|madarchoda|behenchod|bhenchod|behanchod|behnchod|bhnchod|bnchod|bakchod|bakchodi|bkchod|bhosdi|bhosdike|bhosdika|bhosdiwale|bhosdiwala|bhosadi|bhosadike|bhosda|bhosada|bhosad|bhosadpappu|bhadwa|bhadwe|bhadwaa|bhadwi|bhadva|chutiya|chutiye|chutiyapa|chutiyapanti|chutiyagiri|chutya|chootiya|chutia|chut|choot|chooot|chutmarike|chutmari|chutad|chodu|chod|choda|chodna|chode|chodne|chodra|lund|lnd|lauda|laude|laudu|lavda|lavde|lawda|lawde|loda|lode|louda|loude|lodu|gaand|gand|gandu|gaandu|gandwa|gandmara|gandmasti|gandfat|gandphat|gandya|randi|randwa|randikhana|randibazi|raand|harami|haramkhor|haramzada|haramzadi|haraam|kamina|kamine|kaminey|kamini|kutta|kutte|kuttey|kuta|kutti|kutiya|saala|saale|suar|suwar|tatti|tati|jhatu|jhaatu|jhaat|jhat|chinal|chinaal|chakka|chhakka|hijda|hijra|muth|mutthal|muthal|muthmare|tharki|hawas|hawasi|tatta|tatte|tattey|chuchi|chuchiyan|bubbe|boobe|mamme|dalal|dalla|bulla|aandu|bklode)\b/i,
+  // Multi-word Hindi / Hinglish abusive phrases
+  /\b(behen ke lode|bhen ke lode|behen ki chut|bhen ki chut|maa ki chut|maa ki choot|maakichut|maa ke lode|maa chuda|maachuda|teri maa ki|teri behan ki|teri ma ka|bhosdi ke|bhosadi ke)\b/i,
+  // Marathi / Pune regional slurs
+  /\b(aai zavli|aai zhavli|aaizhavadya|zavadya|zhavadya|zhavnya|zavnya|bhikarchot|bhikarchod|yedzavya|yedzhavya|yedzava|lavdya|lawdya|laudya|bocha|bochya|bhosadya|randichya|fodri|phodri)\b/i,
+  // Devanagari script Hindi / Marathi gaaliyan & explicit words
+  /(मादरचोद|मदरचोद|बहनचोद|भेनचोद|भोसड़ी|भोसडीके|भोसड़ा|भड़वा|भड़वे|चूतिया|चूत|गांड|गांडू|लंड|लौड़ा|लौड़े|लोड़ा|रंडी|हरामी|हरामजादा|हरामखोर|कमीना|कमीने|कुत्ता|कुत्ते|कुतिया|साला|साले|सुअर|टट्टी|झाटू|झांट|छिनाल|छक्का|हिजड़ा|मुठ|मुठ्ठल|हवस|ठरकी|बकचोद|बकचोदी|चोद|चोदना|चोदू|माँ की चूत|बहन के लौड़े|नंगा|नंगी|सेक्स|पॉर्न|न्यूड|रेप)/u,
+  // Censored / asterisk / symbol masked evasions (matched on raw text before normalization strips punctuation)
+  /\b(ch[*@#x_]+t|ch[*@#x_]+tiy[ae]|bh[*@#x_]+sd[iy]|bh[*@#x_]*sd[*@#x_]*k[ae]?|m[*@#x_]*d[*@#x_]*rch[*@#x_]*d|b[*@#x_]*h[*@#x_]*nch[*@#x_]*d|g[*@#x_]+ndu?|l[*@#x_]+nd|l[*@#x_]+d[ae]|r[*@#x_]+nd[iy]|f[*@#x_]+ck|sh[*@#x_]+t|b[*@#x_]+tch|s[*@#x_]+x|p[*@#x_]+rn)\b/i,
+  // Spaced / dotted obfuscations (e.g., "s e x", "m.c", "b c", "b.s.d.k", "c h u t", "g a n d")
+  /\bs[\s._*\-]+e[\s._*\-]+x\b/i,
+  /\bf[\s._*\-]+u[\s._*\-]+c[\s._*\-]+k\b/i,
+  /\bm[\s._*\-]+c\b/i,
+  /\bb[\s._*\-]+c\b/i,
+  /\bb[\s._*\-]+k[\s._*\-]+l\b/i,
+  /\bm[\s._*\-]+k[\s._*\-]+c\b/i,
+  /\bb[\s._*\-]+s[\s._*\-]+d[\s._*\-]+k\b/i,
+  /\bc[\s._*\-]+h[\s._*\-]+u[\s._*\-]+t\b/i,
+  /\bg[\s._*\-]+a[\s._*\-]+n[\s._*\-]+d\b/i,
+  /\bl[\s._*\-]+u[\s._*\-]+n[\s._*\-]+d\b/i,
+  /\br[\s._*\-]+a[\s._*\-]+n[\s._*\-]+d[\s._*\-]+i\b/i,
   // Self-harm / severe safety / doxxing / spam links
   /\b(kill yourself|kys|suicide pact|how to die|commit suicide)\b/i,
   /\b(doxx|home address|phone number\s*:\s*\+?\d{7,})\b/i,
@@ -245,10 +265,11 @@ export function moderateText(
     };
   }
 
-  // Check raw + normalized text for prohibited words
+  // Check raw + normalized + repeat-collapsed text for Hindi/English/Devanagari abuse
   const normalized = normalizeForModeration(text);
+  const collapsed = collapseRepeatedLetters(normalized);
   for (const pattern of PROFANITY_AND_SEXUAL_PATTERNS) {
-    if (pattern.test(text) || pattern.test(normalized)) {
+    if (pattern.test(text) || pattern.test(normalized) || pattern.test(collapsed)) {
       return {
         decision: "rejected",
         reason: "Abusive, explicit, or prohibited words/links are not allowed.",
@@ -256,15 +277,15 @@ export function moderateText(
     }
   }
 
-  if (!options.isShortLabel) {
-    // Repeated same word spam (e.g., "hello hello hello hello")
-    if (/\b([a-z0-9]{2,})\b(?:\s+\1\b){3,}/i.test(normalized)) {
-      return {
-        decision: "rejected",
-        reason: "Repeated spam words are not allowed.",
-      };
-    }
+  // Repeated same word spam applies to BOTH confessions and comments
+  if (/\b([a-z0-9]{2,})\b(?:\s+\1\b){3,}/i.test(normalized)) {
+    return {
+      decision: "rejected",
+      reason: "Repeated spam words are not allowed.",
+    };
+  }
 
+  if (!options.isShortLabel) {
     // Require meaningful alphabetic letters (avoid pure symbols/numbers/gibberish)
     const letterCount = (text.match(/[a-zA-Z\u0900-\u097F]/g) ?? []).length;
     if (letterCount < 4) {

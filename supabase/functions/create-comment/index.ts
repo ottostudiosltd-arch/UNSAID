@@ -55,7 +55,7 @@ serve(async (req) => {
       );
     }
 
-    const moderation = moderateText(text);
+    const moderation = moderateText(text, { isShortLabel: true });
     if (moderation.decision !== "approved") {
       return errorResponse(
         req,
@@ -105,7 +105,7 @@ serve(async (req) => {
       ok: boolean;
       code?: string;
       message?: string;
-      comment?: unknown;
+      comment?: Record<string, unknown>;
       comments_count?: number;
     };
 
@@ -127,7 +127,7 @@ serve(async (req) => {
     return jsonResponse(
       req,
       {
-        comment: resObj.comment,
+        comment: resObj.comment ? { ...resObj.comment, is_owner: true } : null,
         commentsCount: resObj.comments_count,
       },
       201,

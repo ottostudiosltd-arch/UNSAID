@@ -768,6 +768,22 @@ export function Admin() {
                         >
                           Hide Content
                         </button>
+                        {rep.target_type === "comment" && (
+                          <button
+                            type="button"
+                            disabled={busyId === rep.id}
+                            onClick={() =>
+                              void performAction(
+                                rep.id,
+                                { action: "delete_comment", targetId: rep.target_id },
+                                "Reported comment permanently deleted.",
+                              )
+                            }
+                            className="rounded-full bg-ink px-3 py-1 font-bold text-white dark:bg-[#2E244F]"
+                          >
+                            Delete Comment
+                          </button>
+                        )}
                         {rep.target_type === "confession" && (
                           <button
                             type="button"

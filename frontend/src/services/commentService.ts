@@ -1,5 +1,9 @@
 import type { CommentItem, Confession } from "../types/confession";
-import { demoCreateComment, demoGetConfession } from "./demoStore";
+import {
+  demoCreateComment,
+  demoDeleteComment,
+  demoGetConfession,
+} from "./demoStore";
 import { invokeEdge, isLiveBackendEnabled } from "./edgeApi";
 
 export interface ConfessionDetailResponse {
@@ -39,4 +43,22 @@ export async function submitComment(
       text,
     },
   );
+}
+
+export async function deleteOwnComment(
+  commentId: string,
+): Promise<{ ok: boolean; id: string; confessionId?: string; commentsCount: number }> {
+  if (!isLiveBackendEnabled()) {
+    return demoDeleteComment(commentId);
+  }
+
+  return invokeEdge<{
+    ok: boolean;
+    id: string;
+    confessionId?: string;
+    commentsCount: number;
+  }>("delete-own-content", {
+    targetType: "comment",
+    targetId: commentId,
+  });
 }

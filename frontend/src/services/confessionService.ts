@@ -8,6 +8,7 @@ import type {
 } from "../types/confession";
 import {
   demoCreateConfession,
+  demoDeleteConfession,
   demoGetFeed,
   demoToggleLike,
   demoVotePoll,
@@ -66,6 +67,19 @@ export async function submitConfession(input: {
     vibe: input.vibe,
     authorName: input.authorName,
     pollOptions: input.pollOptions,
+  });
+}
+
+export async function deleteOwnConfession(
+  confessionId: string,
+): Promise<{ ok: boolean; id: string }> {
+  if (!isLiveBackendEnabled()) {
+    return demoDeleteConfession(confessionId);
+  }
+
+  return invokeEdge<{ ok: boolean; id: string }>("delete-own-content", {
+    targetType: "confession",
+    targetId: confessionId,
   });
 }
 

@@ -184,7 +184,8 @@ serve(async (req) => {
           inserted.status === "pending"
             ? "Your confession was received and is awaiting quick moderator approval."
             : "Your confession is live on campus!",
-        confession: inserted.status === "approved" ? inserted : null,
+        confession:
+          inserted.status === "approved" ? { ...inserted, is_owner: true } : null,
       },
       201,
     );

@@ -55,7 +55,7 @@ serve(async (req) => {
     const { data: confession, error: confError } = await supabase
       .from("confessions")
       .select(
-        "id, college_id, college_code, college_name, author_name, category, vibe, content, poll, likes_count, comments_count, created_at",
+        "id, college_id, college_code, college_name, author_name, category, vibe, content, poll, likes_count, comments_count, session_hash, created_at",
       )
       .eq("id", confessionId)
       .eq("status", "approved")
@@ -70,7 +70,7 @@ serve(async (req) => {
 
     let commentQuery = supabase
       .from("comments")
-      .select("id, confession_id, content, created_at")
+      .select("id, confession_id, content, session_hash, created_at")
       .eq("confession_id", confessionId)
       .eq("status", "approved")
       .order("created_at", { ascending: true })
@@ -85,12 +85,17 @@ serve(async (req) => {
       return errorResponse(req, "FETCH_FAILED", "Failed to load comments.", 500);
     }
 
-    const comments = (commentRows ?? []).slice(0, COMMENTS_PAGE_SIZE);
+    const commentsPage = (commentRows ?? []).slice(0, COMMENTS_PAGE_SIZE);
     const hasMoreComments = (commentRows ?? []).length > COMMENTS_PAGE_SIZE;
     const nextCommentCursor =
-      hasMoreComments && comments.length > 0
-        ? comments[comments.length - 1].created_at
+      hasMoreComments && commentsPage.length > 0
+        ? commentsPage[commentsPage.length - 1].created_at
         : null;
+
+    const comments = commentsPage.map(({ session_hash: commentSessionHash, ...c }) => ({
+      ...c,
+      is_owner: commentSessionHash === sessionHash,
+    }));
 
     const { data: likedRow } = await supabase
       .from("confession_likes")
@@ -99,10 +104,17 @@ serve(async (req) => {
       .eq("session_hash", sessionHash)
       .maybeSingle();
 
-    const { college_id: _omit, ...publicConfession } = confession;
+    const {
+      college_id: _omitCollegeId,
+      session_hash: confSessionHash,
+      ...publicConfession
+    } = confession;
 
     return jsonResponse(req, {
-      confession: publicConfession,
+      confession: {
+        ...publicConfession,
+        is_owner: confSessionHash === sessionHash,
+      },
       liked: Boolean(likedRow),
       comments,
       hasMoreComments,

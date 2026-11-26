@@ -5,10 +5,12 @@ import { AppShell } from "../components/AppShell";
 import { CategoryPills } from "../components/CategoryPills";
 import { CommentsSheet } from "../components/CommentsSheet";
 import { ConfessionCard } from "../components/ConfessionCard";
-import { OFFICIAL_COLLEGES } from "../data/colleges";
+import { OFFICIAL_COLLEGES, type OfficialCollege } from "../data/colleges";
 import { useCampusSession } from "../hooks/useCampusSession";
 import { assetUrl } from "../lib/assetUrl";
+import { fetchCollegesList } from "../services/collegeService";
 import {
+  deleteOwnConfession,
   fetchFeed,
   toggleConfessionLike,
   voteOnPoll,
@@ -31,6 +33,7 @@ export function Feed({ mode = "campus", defaultSort = "latest" }: FeedProps) {
   const [category, setCategory] = useState<CategoryFilter>("all");
   const [sort, setSort] = useState<FeedSort>(defaultSort);
   const [collegeFilter, setCollegeFilter] = useState<string>("all");
+  const [collegesList, setCollegesList] = useState<OfficialCollege[]>(OFFICIAL_COLLEGES);
   const [items, setItems] = useState<Confession[]>([]);
   const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
   const [vibes, setVibes] = useState<CampusVibesSummary | undefined>(undefined);
@@ -45,6 +48,17 @@ export function Feed({ mode = "campus", defaultSort = "latest" }: FeedProps) {
   useEffect(() => {
     setSort(defaultSort);
   }, [defaultSort, mode]);
+
+  useEffect(() => {
+    if (mode !== "explore") return;
+    let active = true;
+    void fetchCollegesList().then((list) => {
+      if (active && list.length > 0) setCollegesList(list);
+    });
+    return () => {
+      active = false;
+    };
+  }, [mode]);
 
   const loadFeed = useCallback(
     async (cursorToUse: string | null = null, append = false) => {
@@ -146,6 +160,19 @@ export function Feed({ mode = "campus", defaultSort = "latest" }: FeedProps) {
     }
   }
 
+  async function handleDeleteConfession(confessionId: string) {
+    try {
+      await deleteOwnConfession(confessionId);
+      setItems((prev) => prev.filter((item) => item.id !== confessionId));
+      setActiveCommentPost((prev) => (prev?.id === confessionId ? null : prev));
+      if (savedIds.includes(confessionId)) {
+        toggleSave(confessionId);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not delete confession.");
+    }
+  }
+
   return (
     <AppShell
       college={access?.college ?? null}
@@ -178,7 +205,7 @@ export function Feed({ mode = "campus", defaultSort = "latest" }: FeedProps) {
               className="rounded-full border border-[#E4D9FB] bg-[#FCF9FF] px-3.5 py-1.5 text-xs font-bold text-ink focus:border-pastel-lavenderDeep focus:outline-none dark:border-white/15 dark:bg-[#211E30] dark:text-[#F4F1FA]"
             >
               <option value="all">All Colleges</option>
-              {OFFICIAL_COLLEGES.map((c) => (
+              {collegesList.map((c) => (
                 <option key={c.code} value={c.code}>
                   {c.code} — {c.shortName}
                 </option>
@@ -301,6 +328,7 @@ export function Feed({ mode = "campus", defaultSort = "latest" }: FeedProps) {
               onToggleSave={toggleSave}
               onVotePoll={(cId, oId) => void handleVotePoll(cId, oId)}
               onOpenComments={(post) => setActiveCommentPost(post)}
+              onDeleteConfession={(id) => handleDeleteConfession(id)}
             />
           ))}
 
