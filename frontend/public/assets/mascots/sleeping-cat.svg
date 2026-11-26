@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 180" fill="none">
+  <!-- Lavender cloud -->
+  <path d="M35 135C22 135 14 123 18 110C22 97 34 92 46 95C52 78 72 68 92 73C104 61 128 62 140 76C156 72 174 82 177 98C190 99 200 110 198 123C196 136 184 144 170 144H48C41 144 37 140 35 135Z" fill="#DFC8FF" stroke="#1E1B2E" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M48 134C82 140 138 140 176 132" stroke="#C5A3FA" stroke-width="6" stroke-linecap="round" opacity="0.65"/>
+  <!-- Floating pink hearts -->
+  <path d="M52 55C52 48 61 45 65 51C69 45 78 48 78 55C78 64 65 72 65 72C65 72 52 64 52 55Z" fill="#FF7EB6" stroke="#1E1B2E" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M162 60C162 55 168 53 171 57C174 53 180 55 180 60C180 66 171 72 171 72C171 72 162 66 162 60Z" fill="#FF9EC7" stroke="#1E1B2E" stroke-width="2.5" stroke-linejoin="round"/>
+  <!-- Sleeping white cat body -->
+  <ellipse cx="110" cy="108" rx="46" ry="26" fill="#FFFFFF" stroke="#1E1B2E" stroke-width="4"/>
+  <!-- Cat tail -->
+  <path d="M150 114C166 114 174 103 166 95C160 89 149 95 147 104" fill="#FFFFFF" stroke="#1E1B2E" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Cat head -->
+  <path d="M68 94C64 80 68 62 76 58C83 54 90 64 93 69C101 66 113 66 121 69C124 64 131 54 138 58C146 62 150 80 146 94C144 108 128 117 107 117C86 117 70 108 68 94Z" fill="#FFFFFF" stroke="#1E1B2E" stroke-width="4" stroke-linejoin="round"/>
+  <!-- Pink inner ears -->
+  <path d="M74 75L76 64L85 71Z" fill="#FFB3D1"/>
+  <path d="M140 75L138 64L129 71Z" fill="#FFB3D1"/>
+  <!-- Forehead stripes -->
+  <path d="M101 69V76M107 68V77M113 69V76" stroke="#9A94AD" stroke-width="3" stroke-linecap="round"/>
+  <!-- Closed sleeping eyes -->
+  <path d="M84 91C87 95 93 95 96 91" stroke="#1E1B2E" stroke-width="3.2" stroke-linecap="round"/>
+  <path d="M118 91C121 95 127 95 130 91" stroke="#1E1B2E" stroke-width="3.2" stroke-linecap="round"/>
+  <!-- Nose & smile -->
+  <path d="M105 97H109L107 100Z" fill="#1E1B2E"/>
+  <path d="M102 103C105 105 109 105 112 103" stroke="#1E1B2E" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Rosy cheeks -->
+  <ellipse cx="83" cy="100" rx="6" ry="3.5" fill="#FF9EBB" opacity="0.75"/>
+  <ellipse cx="131" cy="100" rx="6" ry="3.5" fill="#FF9EBB" opacity="0.75"/>
+  <!-- Cute paw tucked under chin -->
+  <ellipse cx="96" cy="117" rx="10" ry="6.5" fill="#FFFFFF" stroke="#1E1B2E" stroke-width="3.5"/>
+  <ellipse cx="118" cy="117" rx="10" ry="6.5" fill="#FFFFFF" stroke="#1E1B2E" stroke-width="3.5"/>
+</svg>
