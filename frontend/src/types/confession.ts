@@ -146,7 +146,7 @@ export const CATEGORY_META: Record<ConfessionCategory, CategoryMeta> = {
     pillText: "text-[#1D4ED8]",
     cardBg: "bg-gradient-to-br from-[#F7FBFF] via-[#EFF6FF] to-[#DFF0FF]",
     cardBorder: "border-[#BFDBFE]",
-    mascotSrc: assetUrl("assets/mascots/admin-notice.svg"),
+    mascotSrc: assetUrl("assets/mascots/admin-notice.webp"),
     mascotAlt: "Official Admin Notice illustration",
   },
 };

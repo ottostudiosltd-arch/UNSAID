@@ -385,7 +385,7 @@ export function Admin() {
                 </div>
 
                 <img
-                  src={assetUrl("assets/mascots/admin-notice.svg")}
+                  src={assetUrl("assets/mascots/admin-notice.webp")}
                   alt="Official Admin Notice sticker"
                   className="h-20 w-20 shrink-0 object-contain"
                 />
