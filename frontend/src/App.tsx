@@ -1,5 +1,6 @@
 import { lazy, Suspense, useState, type ReactNode } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { InstallAppPopup } from "./components/InstallAppPopup";
 import { getCampusAccess } from "./lib/session";
 import { Feed } from "./pages/Feed";
 import { Welcome } from "./pages/Welcome";
@@ -104,6 +105,7 @@ export function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>
+      <InstallAppPopup />
     </BrowserRouter>
   );
 }
