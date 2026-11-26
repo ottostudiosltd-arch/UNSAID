@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Bookmark } from "lucide-react";
 import { Link } from "react-router-dom";
 import { AppShell } from "../components/AppShell";
+import { CommentsSheet } from "../components/CommentsSheet";
 import { ConfessionCard } from "../components/ConfessionCard";
 import { useCampusSession } from "../hooks/useCampusSession";
 import { assetUrl } from "../lib/assetUrl";
@@ -18,6 +19,7 @@ export function Saved() {
   const [items, setItems] = useState<Confession[]>([]);
   const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
+  const [activeCommentPost, setActiveCommentPost] = useState<Confession | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -123,10 +125,30 @@ export function Saved() {
               onToggleLike={(id) => void handleLike(id)}
               onToggleSave={toggleSave}
               onVotePoll={(cId, oId) => void handleVotePoll(cId, oId)}
+              onOpenComments={(post) => setActiveCommentPost(post)}
             />
           ))}
         </div>
       )}
+
+      <CommentsSheet
+        confession={activeCommentPost}
+        onClose={() => setActiveCommentPost(null)}
+        onCommentCountChange={(confessionId, commentsCount) => {
+          setItems((prev) =>
+            prev.map((item) =>
+              item.id === confessionId && item.comments_count !== commentsCount
+                ? { ...item, comments_count: commentsCount }
+                : item,
+            ),
+          );
+          setActiveCommentPost((prev) =>
+            prev && prev.id === confessionId && prev.comments_count !== commentsCount
+              ? { ...prev, comments_count: commentsCount }
+              : prev,
+          );
+        }}
+      />
     </AppShell>
   );
 }

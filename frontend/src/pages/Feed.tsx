@@ -3,6 +3,7 @@ import { Clock, Flame, PenLine, RefreshCw, Trophy } from "lucide-react";
 import { Link } from "react-router-dom";
 import { AppShell } from "../components/AppShell";
 import { CategoryPills } from "../components/CategoryPills";
+import { CommentsSheet } from "../components/CommentsSheet";
 import { ConfessionCard } from "../components/ConfessionCard";
 import { OFFICIAL_COLLEGES } from "../data/colleges";
 import { useCampusSession } from "../hooks/useCampusSession";
@@ -38,6 +39,7 @@ export function Feed({ mode = "campus", defaultSort = "latest" }: FeedProps) {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [activeCommentPost, setActiveCommentPost] = useState<Confession | null>(null);
   const requestSeqRef = useRef(0);
 
   useEffect(() => {
@@ -298,6 +300,7 @@ export function Feed({ mode = "campus", defaultSort = "latest" }: FeedProps) {
               onToggleLike={(id) => void handleToggleLike(id)}
               onToggleSave={toggleSave}
               onVotePoll={(cId, oId) => void handleVotePoll(cId, oId)}
+              onOpenComments={(post) => setActiveCommentPost(post)}
             />
           ))}
 
@@ -315,6 +318,25 @@ export function Feed({ mode = "campus", defaultSort = "latest" }: FeedProps) {
           )}
         </div>
       )}
+
+      <CommentsSheet
+        confession={activeCommentPost}
+        onClose={() => setActiveCommentPost(null)}
+        onCommentCountChange={(confessionId, commentsCount) => {
+          setItems((prev) =>
+            prev.map((item) =>
+              item.id === confessionId && item.comments_count !== commentsCount
+                ? { ...item, comments_count: commentsCount }
+                : item,
+            ),
+          );
+          setActiveCommentPost((prev) =>
+            prev && prev.id === confessionId && prev.comments_count !== commentsCount
+              ? { ...prev, comments_count: commentsCount }
+              : prev,
+          );
+        }}
+      />
     </AppShell>
   );
 }

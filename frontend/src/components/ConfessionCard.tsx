@@ -13,6 +13,7 @@ interface ConfessionCardProps {
   onToggleLike: (id: string) => void;
   onToggleSave: (id: string) => void;
   onVotePoll?: (confessionId: string, optionId: string) => void;
+  onOpenComments?: (confession: Confession) => void;
 }
 
 export function ConfessionCard({
@@ -24,6 +25,7 @@ export function ConfessionCard({
   onToggleLike,
   onToggleSave,
   onVotePoll,
+  onOpenComments,
 }: ConfessionCardProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const meta = CATEGORY_META[confession.category] ?? CATEGORY_META.thoughts;
@@ -106,14 +108,26 @@ export function ConfessionCard({
       </div>
 
       {/* Main confession text */}
-      <Link
-        to={`/confession/${confession.id}`}
-        className="relative z-10 mt-3 block max-w-[68%] sm:max-w-[70%]"
-      >
-        <p className="whitespace-pre-wrap break-words font-display text-[17px] font-semibold leading-snug text-ink sm:text-[19px]">
-          {confession.content}
-        </p>
-      </Link>
+      {onOpenComments ? (
+        <button
+          type="button"
+          onClick={() => onOpenComments(confession)}
+          className="relative z-10 mt-3 block max-w-[68%] text-left sm:max-w-[70%]"
+        >
+          <p className="whitespace-pre-wrap break-words font-display text-[17px] font-semibold leading-snug text-ink sm:text-[19px]">
+            {confession.content}
+          </p>
+        </button>
+      ) : (
+        <Link
+          to={`/confession/${confession.id}`}
+          className="relative z-10 mt-3 block max-w-[68%] sm:max-w-[70%]"
+        >
+          <p className="whitespace-pre-wrap break-words font-display text-[17px] font-semibold leading-snug text-ink sm:text-[19px]">
+            {confession.content}
+          </p>
+        </Link>
+      )}
 
       {/* Interactive Poll (everyone can vote) */}
       {confession.poll && confession.poll.options.length >= 2 && (
@@ -183,13 +197,25 @@ export function ConfessionCard({
           <span className="tabular-nums">{confession.likes_count}</span>
         </button>
 
-        <Link
-          to={`/confession/${confession.id}`}
-          className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-ink/75 transition hover:bg-white/75 hover:text-ink"
-        >
-          <MessageCircle className="h-4 w-4 text-ink/70" />
-          <span className="tabular-nums">{confession.comments_count}</span>
-        </Link>
+        {onOpenComments ? (
+          <button
+            type="button"
+            onClick={() => onOpenComments(confession)}
+            aria-label="Open comments"
+            className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-ink/75 transition hover:bg-white/75 hover:text-ink"
+          >
+            <MessageCircle className="h-4 w-4 text-ink/70" />
+            <span className="tabular-nums">{confession.comments_count}</span>
+          </button>
+        ) : (
+          <Link
+            to={`/confession/${confession.id}`}
+            className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-ink/75 transition hover:bg-white/75 hover:text-ink"
+          >
+            <MessageCircle className="h-4 w-4 text-ink/70" />
+            <span className="tabular-nums">{confession.comments_count}</span>
+          </Link>
+        )}
       </div>
     </article>
   );
