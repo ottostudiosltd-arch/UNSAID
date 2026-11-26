@@ -12,6 +12,7 @@ export default defineConfig({
         "icons/icon-192.png",
         "icons/icon-512.png",
         "assets/mascots/*.webp",
+        "assets/mascots/*.png",
         "assets/mascots/*.svg",
         "assets/decorations/*.svg",
       ],
@@ -19,8 +20,8 @@ export default defineConfig({
         name: "UNSAID. — Your Campus. Your Stories.",
         short_name: "UNSAID.",
         description: "Anonymous campus confessions & stories in a safe campus space.",
-        theme_color: "#FFF6F2",
-        background_color: "#FFF6F2",
+        theme_color: "#FDF4E4",
+        background_color: "#FDF4E4",
         display: "standalone",
         orientation: "portrait-primary",
         start_url: ".",
@@ -42,6 +43,7 @@ export default defineConfig({
         cleanupOutdatedCaches: true,
         skipWaiting: true,
         clientsClaim: true,
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         globPatterns: ["**/*.{js,css,html,ico,png,svg,webp}"],
         runtimeCaching: [
           {

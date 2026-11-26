@@ -8,7 +8,7 @@ export default {
         sans: ["'Plus Jakarta Sans'", "system-ui", "sans-serif"],
       },
       colors: {
-        cream: "#FFF7F4",
+        cream: "#FDF4E4",
         ink: "#1E1B2E",
         muted: "#6B6580",
         pastel: {
@@ -24,8 +24,8 @@ export default {
         },
       },
       boxShadow: {
-        card: "0 10px 28px -12px rgba(55, 36, 99, 0.12), 0 2px 8px -2px rgba(55, 36, 99, 0.05)",
-        shell: "0 20px 60px -18px rgba(84, 52, 138, 0.18)",
+        card: "0 10px 28px -12px rgba(138, 92, 32, 0.14), 0 2px 8px -2px rgba(138, 92, 32, 0.06)",
+        shell: "0 20px 60px -18px rgba(138, 92, 32, 0.18)",
         pill: "0 4px 12px -2px rgba(30, 27, 46, 0.14)",
       },
     },

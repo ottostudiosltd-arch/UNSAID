@@ -97,10 +97,10 @@ export function AppShell({
 
         <div className="flex items-center gap-2">
           <img
-            src={assetUrl("assets/mascots/peeking-cat.svg")}
+            src={assetUrl("assets/mascots/collegecampus.png")}
             alt=""
             aria-hidden="true"
-            className="h-14 w-24 object-contain"
+            className="h-14 w-24 object-contain drop-shadow-sm"
           />
           <button
             type="button"

@@ -9,12 +9,12 @@
 
   body {
     font-family: "Plus Jakarta Sans", system-ui, sans-serif;
-    background-color: #fff7f4;
+    background-color: #fdf4e4;
     background-image:
-      radial-gradient(circle at 10% 10%, rgba(237, 227, 255, 0.85) 0%, transparent 42%),
-      radial-gradient(circle at 90% 15%, rgba(255, 227, 241, 0.8) 0%, transparent 40%),
-      radial-gradient(circle at 80% 85%, rgba(220, 249, 234, 0.7) 0%, transparent 42%),
-      radial-gradient(circle at 12% 88%, rgba(255, 240, 199, 0.6) 0%, transparent 38%);
+      radial-gradient(circle at 14% 12%, rgba(255, 230, 168, 0.75) 0%, transparent 44%),
+      radial-gradient(circle at 88% 18%, rgba(254, 220, 152, 0.6) 0%, transparent 42%),
+      radial-gradient(circle at 82% 84%, rgba(255, 236, 186, 0.65) 0%, transparent 45%),
+      radial-gradient(circle at 16% 86%, rgba(252, 224, 174, 0.55) 0%, transparent 40%);
     background-attachment: fixed;
     min-height: 100vh;
   }

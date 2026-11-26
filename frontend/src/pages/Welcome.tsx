@@ -51,14 +51,8 @@ export function Welcome({ onSuccess }: WelcomeProps) {
 
   return (
     <div className="flex min-h-screen items-center justify-center px-4 py-10">
-      <div className="relative w-full max-w-md pt-10">
-        <img
-          src={assetUrl("assets/mascots/peeking-cat.svg")}
-          alt="UNSAID mascot"
-          className="pointer-events-none relative z-20 mx-auto -mb-4 w-44 drop-shadow-sm"
-        />
-
-        <div className="relative z-10 rounded-[32px] border border-white bg-white/90 p-6 shadow-shell backdrop-blur-md sm:p-8">
+      <div className="relative w-full max-w-md">
+        <div className="relative z-10 rounded-[32px] border border-[#F8E2B0] bg-gradient-to-b from-[#FFFDF7] via-[#FFF9EA] to-[#FFEFC8] p-6 shadow-shell backdrop-blur-md sm:p-8">
           <div className="flex justify-center">
             <img
               src={assetUrl("assets/mascots/unsaid-logo.webp")}
@@ -90,7 +84,7 @@ export function Welcome({ onSuccess }: WelcomeProps) {
                 value={code}
                 onChange={(e) => setCode(e.target.value.toUpperCase())}
                 placeholder="e.g. 06155"
-                className="w-full rounded-2xl border-2 border-[#E6DCFB] bg-[#FCF9FF] px-4 py-3.5 text-center font-display text-2xl font-bold tracking-[0.25em] text-ink placeholder:tracking-normal placeholder:text-base placeholder:font-medium placeholder:text-muted/60 focus:border-pastel-lavenderDeep focus:outline-none focus:ring-4 focus:ring-pastel-lavender/60"
+                className="w-full rounded-2xl border-2 border-[#F5D692] bg-white px-4 py-3.5 text-center font-display text-2xl font-bold tracking-[0.25em] text-ink placeholder:tracking-normal placeholder:text-base placeholder:font-medium placeholder:text-muted/60 focus:border-[#E6A935] focus:outline-none focus:ring-4 focus:ring-[#FFE39A]/60"
               />
             </div>
 
