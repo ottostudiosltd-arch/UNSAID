@@ -1,11 +1,36 @@
 import { supabase } from "../lib/supabase";
 import { invokeEdge } from "./edgeApi";
 
+export interface AdminCollegeOption {
+  id: string;
+  code: string;
+  name: string;
+  short_name: string | null;
+}
+
+export interface AdminConfessionRow {
+  id: string;
+  college_id: string;
+  college_code: string;
+  college_name: string;
+  author_name: string;
+  category: string;
+  content: string;
+  status: string;
+  likes_count: number;
+  comments_count: number;
+  created_at: string;
+}
+
 export interface AdminDashboardData {
   role: string;
+  colleges: AdminCollegeOption[];
+  allConfessions: AdminConfessionRow[];
   pendingConfessions: Array<{
     id: string;
     college_id: string;
+    college_code: string;
+    college_name: string;
     category: string;
     content: string;
     status: string;

@@ -1,14 +1,20 @@
-import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
 import {
+  BarChart3,
   Check,
   Database,
   LogOut,
+  Plus,
+  RefreshCw,
+  Send,
   ShieldAlert,
   ShieldCheck,
   Trash2,
   X,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { CharacterCounter } from "../components/CharacterCounter";
+import { formatRelativeTime } from "../hooks/useCampusSession";
 import { supabase } from "../lib/supabase";
 import {
   adminSignIn,
@@ -17,6 +23,26 @@ import {
   runAdminAction,
   type AdminDashboardData,
 } from "../services/adminService";
+import {
+  CATEGORY_META,
+  type CampusVibe,
+  type ConfessionCategory,
+} from "../types/confession";
+
+const CATEGORIES: ConfessionCategory[] = [
+  "love",
+  "funny",
+  "college",
+  "secrets",
+  "thoughts",
+];
+
+const VIBES: Array<{ id: CampusVibe; label: string; emoji: string }> = [
+  { id: "happy", label: "Happy", emoji: "😊" },
+  { id: "excited", label: "Excited", emoji: "✨" },
+  { id: "stressed", label: "Stressed", emoji: "😵‍💫" },
+  { id: "other", label: "Chill", emoji: "🌙" },
+];
 
 export function Admin() {
   const [signedIn, setSignedIn] = useState(false);
@@ -24,21 +50,39 @@ export function Admin() {
   const [password, setPassword] = useState("");
   const [authError, setAuthError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [dashboard, setDashboard] = useState<AdminDashboardData | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [statusMsg, setStatusMsg] = useState<string | null>(null);
 
-  const loadDashboard = useCallback(async () => {
-    setLoading(true);
+  // Admin post composer state
+  const [postCollegeId, setPostCollegeId] = useState("");
+  const [postCategory, setPostCategory] = useState<ConfessionCategory>("college");
+  const [postVibe, setPostVibe] = useState<CampusVibe>("happy");
+  const [postAuthor, setPostAuthor] = useState("");
+  const [postText, setPostText] = useState("");
+  const [includePoll, setIncludePoll] = useState(false);
+  const [pollOptions, setPollOptions] = useState<string[]>(["", ""]);
+  const [posting, setPosting] = useState(false);
+
+  // All posts filter
+  const [collegeFilter, setCollegeFilter] = useState("all");
+
+  const loadDashboard = useCallback(async (isRefresh = false) => {
+    if (isRefresh) setRefreshing(true);
+    else setLoading(true);
     setAuthError(null);
     try {
       const data = await fetchAdminDashboard();
       setDashboard(data);
+      setPostCollegeId((prev) => prev || data.colleges[0]?.id || "");
     } catch (err) {
       setDashboard(null);
       setAuthError(err instanceof Error ? err.message : "Unauthorized");
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   }, []);
 
@@ -51,12 +95,18 @@ export function Admin() {
       const hasSession = Boolean(data.session);
       setSignedIn(hasSession);
       if (hasSession) {
-        void loadDashboard();
+        void loadDashboard(false);
       } else {
         setLoading(false);
       }
     });
   }, [loadDashboard]);
+
+  const filteredAllPosts = useMemo(() => {
+    if (!dashboard) return [];
+    if (collegeFilter === "all") return dashboard.allConfessions;
+    return dashboard.allConfessions.filter((c) => c.college_code === collegeFilter);
+  }, [dashboard, collegeFilter]);
 
   async function handleLogin(e: FormEvent) {
     e.preventDefault();
@@ -65,7 +115,7 @@ export function Admin() {
     try {
       await adminSignIn(email.trim(), password);
       setSignedIn(true);
-      await loadDashboard();
+      await loadDashboard(false);
     } catch (err) {
       setAuthError(err instanceof Error ? err.message : "Sign-in failed.");
       setLoading(false);
@@ -81,10 +131,12 @@ export function Admin() {
   async function performAction(id: string, body: Record<string, unknown>, label: string) {
     setBusyId(id);
     setStatusMsg(null);
+    setAuthError(null);
     try {
       await runAdminAction(body);
       setStatusMsg(label);
-      await loadDashboard();
+      setConfirmDeleteId(null);
+      await loadDashboard(true);
     } catch (err) {
       setAuthError(err instanceof Error ? err.message : "Action failed.");
     } finally {
@@ -92,10 +144,57 @@ export function Admin() {
     }
   }
 
+  async function handleAdminCreatePost(e: FormEvent) {
+    e.preventDefault();
+    setAuthError(null);
+    setStatusMsg(null);
+
+    if (!postCollegeId) {
+      setAuthError("Please select a target college.");
+      return;
+    }
+    if (postText.trim().length < 5) {
+      setAuthError("Post must be at least 5 characters.");
+      return;
+    }
+
+    const cleanPoll = includePoll
+      ? pollOptions.map((o) => o.trim()).filter(Boolean)
+      : undefined;
+
+    if (includePoll && (!cleanPoll || cleanPoll.length < 2)) {
+      setAuthError("Please fill at least 2 poll options or remove the poll.");
+      return;
+    }
+
+    setPosting(true);
+    try {
+      await runAdminAction({
+        action: "admin_create_confession",
+        collegeId: postCollegeId,
+        category: postCategory,
+        vibe: postVibe,
+        authorName: postAuthor.trim() || "Anonymous",
+        text: postText.trim(),
+        pollOptions: cleanPoll,
+      });
+      setPostText("");
+      setPostAuthor("");
+      setIncludePoll(false);
+      setPollOptions(["", ""]);
+      setStatusMsg("New post published live!");
+      await loadDashboard(true);
+    } catch (err) {
+      setAuthError(err instanceof Error ? err.message : "Failed to publish post.");
+    } finally {
+      setPosting(false);
+    }
+  }
+
   return (
     <div className="min-h-screen px-4 py-8">
-      <div className="mx-auto max-w-4xl">
-        <div className="mb-6 flex items-center justify-between">
+      <div className="mx-auto max-w-5xl">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <div>
             <Link
               to="/"
@@ -109,14 +208,26 @@ export function Admin() {
           </div>
 
           {signedIn && (
-            <button
-              type="button"
-              onClick={() => void handleLogout()}
-              className="inline-flex items-center gap-1.5 rounded-full border border-white bg-white px-4 py-2 text-xs font-bold text-ink shadow-sm"
-            >
-              <LogOut className="h-3.5 w-3.5" />
-              <span>Sign out</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                disabled={refreshing || loading}
+                onClick={() => void loadDashboard(true)}
+                className="inline-flex items-center gap-1.5 rounded-full border border-white bg-white px-4 py-2 text-xs font-bold text-ink shadow-sm transition hover:bg-pastel-lavender/60 disabled:opacity-60"
+              >
+                <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? "animate-spin" : ""}`} />
+                <span>{refreshing ? "Refreshing..." : "Refresh"}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => void handleLogout()}
+                className="inline-flex items-center gap-1.5 rounded-full border border-white bg-white px-4 py-2 text-xs font-bold text-ink shadow-sm hover:bg-[#FFE4EC]"
+              >
+                <LogOut className="h-3.5 w-3.5" />
+                <span>Sign out</span>
+              </button>
+            </div>
           )}
         </div>
 
@@ -190,6 +301,13 @@ export function Admin() {
               </div>
             )}
 
+            {authError && (
+              <div className="rounded-2xl border border-[#FFC4D4] bg-[#FFE8EF] px-4 py-2.5 text-xs font-bold text-[#B81D48]">
+                {authError}
+              </div>
+            )}
+
+            {/* Database Capacity Guardrail */}
             {dashboard.health && (
               <section className="rounded-[24px] border border-white bg-white/95 p-5 shadow-card">
                 <div className="flex flex-wrap items-center justify-between gap-3">
@@ -263,6 +381,287 @@ export function Admin() {
               </section>
             )}
 
+            {/* Admin Direct Post Composer */}
+            <section className="rounded-[24px] border border-white bg-white/95 p-5 shadow-card">
+              <h2 className="font-display text-lg font-bold text-ink">
+                Post from Admin Panel
+              </h2>
+              <p className="text-xs font-medium text-muted">
+                Publish a confession or poll directly to any campus feed.
+              </p>
+
+              <form onSubmit={handleAdminCreatePost} className="mt-4 space-y-4">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <label className="text-[11px] font-extrabold uppercase tracking-wider text-muted">
+                      Target College
+                    </label>
+                    <select
+                      value={postCollegeId}
+                      onChange={(e) => setPostCollegeId(e.target.value)}
+                      className="mt-1 w-full rounded-2xl border border-[#ECE4FA] bg-[#FCF9FF] px-3.5 py-2 text-xs font-bold text-ink focus:border-pastel-lavenderDeep focus:outline-none"
+                    >
+                      {dashboard.colleges.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.code} — {c.short_name ?? c.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-[11px] font-extrabold uppercase tracking-wider text-muted">
+                      Display Name (optional)
+                    </label>
+                    <input
+                      type="text"
+                      maxLength={28}
+                      value={postAuthor}
+                      onChange={(e) => setPostAuthor(e.target.value)}
+                      placeholder="Anonymous (leave blank)"
+                      className="mt-1 w-full rounded-2xl border border-[#ECE4FA] bg-[#FCF9FF] px-3.5 py-2 text-xs font-bold text-ink focus:border-pastel-lavenderDeep focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  {CATEGORIES.map((cat) => {
+                    const meta = CATEGORY_META[cat];
+                    const active = postCategory === cat;
+                    return (
+                      <button
+                        key={cat}
+                        type="button"
+                        onClick={() => setPostCategory(cat)}
+                        className={`inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-bold ${
+                          active
+                            ? `${meta.pillBg} ${meta.pillText} border-ink/30`
+                            : "border-[#ECE4FA] bg-white text-muted"
+                        }`}
+                      >
+                        <span>{meta.label}</span>
+                        <span>{meta.emoji}</span>
+                      </button>
+                    );
+                  })}
+
+                  <span className="mx-1 self-center text-xs text-muted">|</span>
+
+                  {VIBES.map((v) => (
+                    <button
+                      key={v.id}
+                      type="button"
+                      onClick={() => setPostVibe(v.id)}
+                      className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-bold ${
+                        postVibe === v.id
+                          ? "border-ink bg-ink text-white"
+                          : "border-[#ECE4FA] bg-white text-muted"
+                      }`}
+                    >
+                      <span>{v.emoji}</span>
+                      <span>{v.label}</span>
+                    </button>
+                  ))}
+                </div>
+
+                <div>
+                  <div className="mb-1.5 flex items-center justify-between">
+                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-muted">
+                      Post Content
+                    </span>
+                    <CharacterCounter current={postText.length} max={1000} />
+                  </div>
+                  <textarea
+                    rows={3}
+                    maxLength={1000}
+                    value={postText}
+                    onChange={(e) => setPostText(e.target.value)}
+                    placeholder="Write a campus confession or announcement..."
+                    className="w-full resize-none rounded-2xl border border-[#ECE4FA] bg-[#FCF9FF] p-3 text-sm font-medium text-ink focus:border-pastel-lavenderDeep focus:outline-none"
+                  />
+                </div>
+
+                <div className="rounded-2xl border border-[#ECE4FA] bg-[#FCF9FF] p-3">
+                  <div className="flex items-center justify-between">
+                    <span className="inline-flex items-center gap-1.5 text-xs font-extrabold text-ink">
+                      <BarChart3 className="h-4 w-4 text-[#5D37B8]" />
+                      <span>Attach Poll</span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setIncludePoll((p) => !p)}
+                      className="rounded-full bg-pastel-lavender px-3 py-1 text-xs font-bold text-[#5D37B8]"
+                    >
+                      {includePoll ? "Remove Poll" : "+ Add Poll"}
+                    </button>
+                  </div>
+
+                  {includePoll && (
+                    <div className="mt-2.5 space-y-2">
+                      {pollOptions.map((opt, idx) => (
+                        <div key={idx} className="flex items-center gap-2">
+                          <input
+                            type="text"
+                            maxLength={60}
+                            value={opt}
+                            onChange={(e) =>
+                              setPollOptions((prev) =>
+                                prev.map((v, i) => (i === idx ? e.target.value : v)),
+                              )
+                            }
+                            placeholder={`Option ${idx + 1}`}
+                            className="flex-1 rounded-xl border border-[#E6DCFB] bg-white px-3 py-1.5 text-xs font-bold text-ink"
+                          />
+                          {pollOptions.length > 2 && (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setPollOptions((prev) => prev.filter((_, i) => i !== idx))
+                              }
+                              className="p-1 text-muted hover:text-[#C81E4B]"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                      {pollOptions.length < 4 && (
+                        <button
+                          type="button"
+                          onClick={() => setPollOptions((prev) => [...prev, ""])}
+                          className="inline-flex items-center gap-1 rounded-full bg-white px-2.5 py-1 text-[11px] font-bold text-[#5D37B8]"
+                        >
+                          <Plus className="h-3 w-3" /> Add option
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex justify-end">
+                  <button
+                    type="submit"
+                    disabled={posting || postText.trim().length < 5}
+                    className="inline-flex items-center gap-2 rounded-full bg-ink px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-[#2C2742] disabled:opacity-50"
+                  >
+                    <Send className="h-3.5 w-3.5" />
+                    <span>{posting ? "Publishing..." : "Publish Post"}</span>
+                  </button>
+                </div>
+              </form>
+            </section>
+
+            {/* All Campus Posts (Browse & Delete Any Post) */}
+            <section className="rounded-[24px] border border-white bg-white/95 p-5 shadow-card">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <h2 className="font-display text-lg font-bold text-ink">
+                  All Campus Posts ({filteredAllPosts.length})
+                </h2>
+
+                <select
+                  aria-label="Filter posts by college"
+                  value={collegeFilter}
+                  onChange={(e) => setCollegeFilter(e.target.value)}
+                  className="rounded-full border border-[#ECE4FA] bg-[#FCF9FF] px-3.5 py-1.5 text-xs font-bold text-ink"
+                >
+                  <option value="all">All Colleges</option>
+                  {dashboard.colleges.map((c) => (
+                    <option key={c.id} value={c.code}>
+                      {c.code} — {c.short_name ?? c.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="mt-3 space-y-2.5">
+                {filteredAllPosts.length === 0 ? (
+                  <p className="text-xs font-semibold text-muted">
+                    No posts found.
+                  </p>
+                ) : (
+                  filteredAllPosts.map((post) => (
+                    <div
+                      key={post.id}
+                      className="rounded-2xl border border-[#ECE4FA] bg-[#FCF9FF] p-3.5"
+                    >
+                      <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="rounded-full bg-pastel-lavender px-2.5 py-0.5 font-extrabold text-[#5D37B8]">
+                            {post.college_code} • {post.college_name}
+                          </span>
+                          <span className="font-bold uppercase text-muted">
+                            {post.category}
+                          </span>
+                          <span className="font-semibold text-ink">
+                            🐱 {post.author_name || "Anonymous"}
+                          </span>
+                          <span className="text-muted">
+                            {formatRelativeTime(post.created_at)}
+                          </span>
+                          <span
+                            className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold uppercase ${
+                              post.status === "approved"
+                                ? "bg-pastel-mint text-[#16794F]"
+                                : post.status === "pending"
+                                ? "bg-pastel-amber text-[#7A4900]"
+                                : "bg-[#FFE4EC] text-[#C81E4B]"
+                            }`}
+                          >
+                            {post.status}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-1.5">
+                          {confirmDeleteId === post.id ? (
+                            <>
+                              <button
+                                type="button"
+                                disabled={busyId === post.id}
+                                onClick={() =>
+                                  void performAction(
+                                    post.id,
+                                    { action: "delete_confession", targetId: post.id },
+                                    "Post permanently deleted.",
+                                  )
+                                }
+                                className="rounded-full bg-[#D81B60] px-3 py-1 text-[11px] font-bold text-white"
+                              >
+                                {busyId === post.id ? "Deleting..." : "Confirm Delete"}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setConfirmDeleteId(null)}
+                                className="rounded-full bg-white px-2.5 py-1 text-[11px] font-bold text-muted"
+                              >
+                                Cancel
+                              </button>
+                            </>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => setConfirmDeleteId(post.id)}
+                              className="inline-flex items-center gap-1 rounded-full bg-[#FFE4EC] px-3 py-1 text-[11px] font-bold text-[#C81E4B] hover:bg-[#FFD0DF]"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                              <span>Delete</span>
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      <p className="mt-2 whitespace-pre-wrap text-sm font-medium text-ink">
+                        {post.content}
+                      </p>
+                      <p className="mt-1.5 text-[11px] font-semibold text-muted">
+                        ♡ {post.likes_count} • 💬 {post.comments_count}
+                      </p>
+                    </div>
+                  ))
+                )}
+              </div>
+            </section>
+
+            {/* Pending Confessions */}
             <section className="rounded-[24px] border border-white bg-white/95 p-5 shadow-card">
               <h2 className="font-display text-lg font-bold text-ink">
                 Pending Moderation ({dashboard.pendingConfessions.length})
@@ -282,7 +681,7 @@ export function Admin() {
                       <p className="text-sm font-medium text-ink">{item.content}</p>
                       <div className="mt-2.5 flex items-center justify-between text-xs">
                         <span className="font-bold uppercase text-muted">
-                          {item.category}
+                          {item.college_code} • {item.category}
                         </span>
                         <div className="flex gap-2">
                           <button
@@ -321,6 +720,7 @@ export function Admin() {
               </div>
             </section>
 
+            {/* Open Reports */}
             <section className="rounded-[24px] border border-white bg-white/95 p-5 shadow-card">
               <h2 className="font-display text-lg font-bold text-ink">
                 Open Reports ({dashboard.reports.length})
@@ -368,6 +768,22 @@ export function Admin() {
                         >
                           Hide Content
                         </button>
+                        {rep.target_type === "confession" && (
+                          <button
+                            type="button"
+                            disabled={busyId === rep.id}
+                            onClick={() =>
+                              void performAction(
+                                rep.id,
+                                { action: "delete_confession", targetId: rep.target_id },
+                                "Reported confession permanently deleted.",
+                              )
+                            }
+                            className="rounded-full bg-ink px-3 py-1 font-bold text-white"
+                          >
+                            Delete Post
+                          </button>
+                        )}
                         <button
                           type="button"
                           disabled={busyId === rep.id}
