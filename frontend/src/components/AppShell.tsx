@@ -49,7 +49,17 @@ export function AppShell({
   const [notifOpen, setNotifOpen] = useState(false);
   const [readIds, setReadIds] = useState<string[]>(() => getReadNotificationIds());
 
-  const notifications: CampusNotification[] = notices.map((n) => ({
+  const uniqueNotices: Confession[] = [];
+  const seenNoticeKeys = new Set<string>();
+  for (const n of notices) {
+    const key = `${n.author_name || "Campus Admin"}:${n.content}`;
+    if (!seenNoticeKeys.has(key)) {
+      seenNoticeKeys.add(key);
+      uniqueNotices.push(n);
+    }
+  }
+
+  const notifications: CampusNotification[] = uniqueNotices.map((n) => ({
     id: n.id,
     title: `${n.author_name || "Campus Admin"} 📢`,
     body: n.content.length > 90 ? `${n.content.slice(0, 90)}...` : n.content,

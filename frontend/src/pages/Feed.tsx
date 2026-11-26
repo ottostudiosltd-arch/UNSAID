@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Clock, Flame, PenLine, RefreshCw, Trophy } from "lucide-react";
 import { Link } from "react-router-dom";
 import { AppShell } from "../components/AppShell";
@@ -38,6 +38,7 @@ export function Feed({ mode = "campus", defaultSort = "latest" }: FeedProps) {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const requestSeqRef = useRef(0);
 
   useEffect(() => {
     setSort(defaultSort);
@@ -45,6 +46,7 @@ export function Feed({ mode = "campus", defaultSort = "latest" }: FeedProps) {
 
   const loadFeed = useCallback(
     async (cursorToUse: string | null = null, append = false) => {
+      const seq = ++requestSeqRef.current;
       if (append) {
         setLoadingMore(true);
       } else {
@@ -60,7 +62,17 @@ export function Feed({ mode = "campus", defaultSort = "latest" }: FeedProps) {
           scope: mode,
           collegeFilter,
         });
-        setItems((prev) => (append ? [...prev, ...res.items] : res.items));
+        if (seq !== requestSeqRef.current) return;
+
+        setItems((prev) => {
+          const combined = append ? [...prev, ...res.items] : res.items;
+          const seen = new Set<string>();
+          return combined.filter((item) => {
+            if (seen.has(item.id)) return false;
+            seen.add(item.id);
+            return true;
+          });
+        });
         setLikedIds((prev) => {
           const next = new Set(append ? prev : []);
           for (const id of res.likedIds) next.add(id);
@@ -70,10 +82,13 @@ export function Feed({ mode = "campus", defaultSort = "latest" }: FeedProps) {
         setHasMore(res.hasMore);
         setVibes(res.vibes);
       } catch (err) {
+        if (seq !== requestSeqRef.current) return;
         setError(err instanceof Error ? err.message : "Could not load campus feed.");
       } finally {
-        setLoading(false);
-        setLoadingMore(false);
+        if (seq === requestSeqRef.current) {
+          setLoading(false);
+          setLoadingMore(false);
+        }
       }
     },
     [category, sort, mode, collegeFilter],

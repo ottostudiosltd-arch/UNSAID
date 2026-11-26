@@ -195,6 +195,26 @@ serve(async (req) => {
       const vibe = inferVibe(text, body.vibe);
       const contentHash = await sha256Hex(text.toLowerCase().replace(/\s+/g, " "));
 
+      // Prevent accidental double-tap duplicates within 5 minutes
+      const fiveMinsAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+      const { data: existingNotice } = await supabase
+        .from("confessions")
+        .select("id")
+        .eq("category", "notice")
+        .eq("content_hash", contentHash)
+        .gte("created_at", fiveMinsAgo)
+        .limit(1)
+        .maybeSingle();
+
+      if (existingNotice) {
+        return errorResponse(
+          req,
+          "DUPLICATE_SUBMISSION",
+          "This exact Admin Notice was just published.",
+          409,
+        );
+      }
+
       let pollPayload: { options: Array<{ id: string; label: string; votes: number }> } | null =
         null;
       if (Array.isArray(body.pollOptions) && body.pollOptions.length > 0) {

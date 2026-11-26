@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import {
   ArrowLeft,
   Bookmark,
@@ -14,6 +14,7 @@ import { CharacterCounter } from "../components/CharacterCounter";
 import { CommentCard } from "../components/CommentCard";
 import { formatRelativeTime, useCampusSession } from "../hooks/useCampusSession";
 import { assetUrl } from "../lib/assetUrl";
+import { checkContentAllowed } from "../lib/moderation";
 import { commentSchema } from "../lib/validation";
 import { fetchConfessionDetail, submitComment } from "../services/commentService";
 import { toggleConfessionLike, voteOnPoll } from "../services/confessionService";
@@ -38,6 +39,7 @@ export function ConfessionDetails() {
   const [replyText, setReplyText] = useState("");
   const [posting, setPosting] = useState(false);
   const [replyError, setReplyError] = useState<string | null>(null);
+  const replyLockRef = useRef(false);
 
   const loadDetail = useCallback(
     async (cursor: string | null = null, append = false) => {
@@ -50,7 +52,15 @@ export function ConfessionDetails() {
         const res = await fetchConfessionDetail(id, cursor);
         setConfession(res.confession);
         setLiked(res.liked);
-        setComments((prev) => (append ? [...prev, ...res.comments] : res.comments));
+        setComments((prev) => {
+          const combined = append ? [...prev, ...res.comments] : res.comments;
+          const seen = new Set<string>();
+          return combined.filter((c) => {
+            if (seen.has(c.id)) return false;
+            seen.add(c.id);
+            return true;
+          });
+        });
         setHasMoreComments(res.hasMoreComments);
         setNextCursor(res.nextCommentCursor);
       } catch (err) {
@@ -91,7 +101,7 @@ export function ConfessionDetails() {
 
   async function handlePostComment(e: FormEvent) {
     e.preventDefault();
-    if (!confession) return;
+    if (!confession || replyLockRef.current) return;
     setReplyError(null);
 
     const parsed = commentSchema.safeParse({ text: replyText });
@@ -100,10 +110,19 @@ export function ConfessionDetails() {
       return;
     }
 
+    const mod = checkContentAllowed(parsed.data.text, { isShortLabel: true });
+    if (!mod.ok) {
+      setReplyError(mod.message);
+      return;
+    }
+
+    replyLockRef.current = true;
     setPosting(true);
     try {
       const res = await submitComment(confession.id, parsed.data.text);
-      setComments((prev) => [...prev, res.comment]);
+      setComments((prev) =>
+        prev.some((c) => c.id === res.comment.id) ? prev : [...prev, res.comment],
+      );
       setConfession((prev) =>
         prev ? { ...prev, comments_count: res.commentsCount } : prev,
       );
@@ -111,6 +130,7 @@ export function ConfessionDetails() {
     } catch (err) {
       setReplyError(err instanceof Error ? err.message : "Could not post reply.");
     } finally {
+      replyLockRef.current = false;
       setPosting(false);
     }
   }

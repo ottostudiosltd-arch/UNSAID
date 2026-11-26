@@ -67,7 +67,7 @@ async function importHmacKey(secret: string): Promise<CryptoKey> {
 
 export async function signCollegeToken(
   payload: Omit<CollegeTokenPayload, "iat" | "exp">,
-  ttlSeconds = 60 * 60 * 12, // 12 hours short-lived token
+  ttlSeconds = 60 * 60 * 12,
 ): Promise<string> {
   const now = Math.floor(Date.now() / 1000);
   const fullPayload: CollegeTokenPayload = {
@@ -119,7 +119,6 @@ export async function verifyCollegeToken(
 
 export function extractSessionId(req: Request): string | null {
   const sessionId = req.headers.get("x-session-id")?.trim() ?? "";
-  // Expect a client-generated UUID or high-entropy random ID (>= 16 chars, <= 128 chars)
   if (sessionId.length < 16 || sessionId.length > 128) return null;
   if (!/^[a-zA-Z0-9_-]+$/.test(sessionId)) return null;
   return sessionId;
@@ -188,45 +187,109 @@ export type ModerationResult = {
   reason?: string;
 };
 
-const HARD_BLOCK_PATTERNS: RegExp[] = [
-  /\b(kill yourself|kys|suicide pact|how to die)\b/i,
+function normalizeForModeration(input: string): string {
+  return input
+    .replace(/[\u200B-\u200D\uFEFF]/g, "")
+    .toLowerCase()
+    .replace(/@/g, "a")
+    .replace(/4/g, "a")
+    .replace(/3/g, "e")
+    .replace(/1/g, "i")
+    .replace(/!/g, "i")
+    .replace(/0/g, "o")
+    .replace(/\$/g, "s")
+    .replace(/5/g, "s")
+    .replace(/7/g, "t")
+    .replace(/[^a-z\u0900-\u097f\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+const PROFANITY_AND_SEXUAL_PATTERNS: RegExp[] = [
+  // Sexual / explicit terms
+  /\b(sex|sexy|sexx+|sexual|sexting|porn|porno|pornography|xxx|nude|nudes|naked|horny|boobs|tits|nipple|vagina|penis|dick|cock|pussy|blowjob|handjob|masturbate|masturbation|cum|cumshot|orgasm|erotic|escort|onlyfans|rape|rapist|molest|incest)\b/i,
+  // English profanity & slurs
+  /\b(fuck|fucker|fucking|fucked|fck|fuk|motherfucker|mf|shit|bullshit|bitch|bitches|ass|asses|asshole|assholes|bastard|slut|whore|cunt|prick|twat|wanker|stfu|suck my)\b/i,
+  // Hindi / Hinglish gaaliyan & slurs
+  /\b(mc|bc|bkl|bsdk|mkc|bkc|bhosdike|bhosdi|bhosda|madarchod|maderchod|madharchod|behenchod|bhenchod|behen ke lode|chutiya|chutiye|chutiyapa|chut|chooot|lund|lauda|lavda|loda|lawda|gaand|gand|gandu|randi|randwa|harami|haramzada|kamina|kamine|kutte|kutta|kutti|saala|saale|suar|tatti|jhatu|jhaat|chinaal|chinal|pataka|maal)\b/i,
+  // Spaced / masked evasions (e.g., "s e x", "m c", "b c", "f u c k")
+  /\bs[\s._*-]+e[\s._*-]+x\b/i,
+  /\bf[\s._*-]+u[\s._*-]+c[\s._*-]+k\b/i,
+  /\bm[\s._*-]+c\b/i,
+  /\bb[\s._*-]+c\b/i,
+  /\bb[\s._*-]+s[\s._*-]+d[\s._*-]+k\b/i,
+  // Self-harm / severe safety / doxxing / spam links
+  /\b(kill yourself|kys|suicide pact|how to die|commit suicide)\b/i,
   /\b(doxx|home address|phone number\s*:\s*\+?\d{7,})\b/i,
-  /(https?:\/\/[^\s]+){2,}/i, // excessive links
+  /(https?:\/\/[^\s]+|www\.[^\s]+|\b[a-z0-9-]+\.(com|in|org|net|xyz|ly)\/[^\s]*)/i,
+  /\b(whatsapp|telegram|insta|instagram|snapchat)\s*[:@]?\s*[a-z0-9._+-]{3,}/i,
 ];
 
-const REVIEW_PATTERNS: RegExp[] = [
-  /https?:\/\/[^\s]+/i, // single external link -> hold for admin review
-  /\b(fuck|bitch|asshole|slut|whore|mc|bc|chutiya|madarchod|behenchod)\b/i,
-  /\b(whatsapp|telegram|insta id|snapchat)\s*[:@]?\s*[a-z0-9._-]{3,}/i,
-];
+const KEYBOARD_SMASH_RE = /(asdfg|sdfgh|dfghj|fghjk|ghjkl|qwert|werty|ertyu|rtyui|tyuio|yuiop|zxcvb|xcvbn|cvbnm)/i;
 
-export function moderateText(rawText: string): ModerationResult {
+export function moderateText(
+  rawText: string,
+  options: { isShortLabel?: boolean } = {},
+): ModerationResult {
   const text = rawText.trim();
 
   if (!text) {
     return { decision: "rejected", reason: "Content cannot be empty." };
   }
 
-  // Repeated character flood (e.g., 12+ identical non-space chars)
-  if (/(.)\1{11,}/u.test(text)) {
-    return { decision: "rejected", reason: "Spammy character repetition detected." };
+  // Repeated character flood (e.g., 6+ identical chars like "aaaaaa" or "!!!!!!")
+  if (/(.)\1{5,}/u.test(text)) {
+    return {
+      decision: "rejected",
+      reason: "Please avoid spammy repeated characters.",
+    };
   }
 
-  for (const pattern of HARD_BLOCK_PATTERNS) {
-    if (pattern.test(text)) {
+  // Check raw + normalized text for prohibited words
+  const normalized = normalizeForModeration(text);
+  for (const pattern of PROFANITY_AND_SEXUAL_PATTERNS) {
+    if (pattern.test(text) || pattern.test(normalized)) {
       return {
         decision: "rejected",
-        reason: "Submission violates campus safety or anti-spam rules.",
+        reason: "Abusive, explicit, or prohibited words/links are not allowed.",
       };
     }
   }
 
-  for (const pattern of REVIEW_PATTERNS) {
-    if (pattern.test(text)) {
+  if (!options.isShortLabel) {
+    // Repeated same word spam (e.g., "hello hello hello hello")
+    if (/\b([a-z0-9]{2,})\b(?:\s+\1\b){3,}/i.test(normalized)) {
       return {
-        decision: "pending",
-        reason: "Held for quick moderator review before appearing publicly.",
+        decision: "rejected",
+        reason: "Repeated spam words are not allowed.",
       };
+    }
+
+    // Require meaningful alphabetic letters (avoid pure symbols/numbers/gibberish)
+    const letterCount = (text.match(/[a-zA-Z\u0900-\u097F]/g) ?? []).length;
+    if (letterCount < 4) {
+      return {
+        decision: "rejected",
+        reason: "Please write a meaningful message with real words.",
+      };
+    }
+
+    // Keyboard smash or vowelless gibberish token check
+    if (KEYBOARD_SMASH_RE.test(normalized)) {
+      return {
+        decision: "rejected",
+        reason: "Random keyboard spam is not allowed.",
+      };
+    }
+
+    const tokens = normalized.split(" ").filter(Boolean);
+    for (const tok of tokens) {
+      if (tok.length >= 14 && !/[aeiouy\u0900-\u097f]/.test(tok)) {
+        return {
+          decision: "rejected",
+          reason: "Random gibberish text is not allowed.",
+        };
+      }
     }
   }
 

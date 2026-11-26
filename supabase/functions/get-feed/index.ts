@@ -101,15 +101,16 @@ serve(async (req) => {
       }
     }
 
+    const fetchLimit = scope === "explore" ? limit * 3 + 1 : limit + 1;
     if (sort !== "latest" && body.cursor) {
       const offset = Number(body.cursor);
       if (Number.isFinite(offset) && offset >= 0) {
-        query = query.range(offset, offset + limit);
+        query = query.range(offset, offset + fetchLimit - 1);
       } else {
-        query = query.limit(limit + 1);
+        query = query.limit(fetchLimit);
       }
     } else {
-      query = query.limit(limit + 1);
+      query = query.limit(fetchLimit);
     }
 
     const { data: rows, error } = await query;
@@ -117,8 +118,24 @@ serve(async (req) => {
       return errorResponse(req, "FEED_FETCH_FAILED", "Could not load campus confessions.", 500);
     }
 
-    const items = (rows ?? []).slice(0, limit);
-    const hasMore = (rows ?? []).length > limit;
+    const rawRows = rows ?? [];
+    const seenIds = new Set<string>();
+    const seenBroadcasts = new Set<string>();
+    const dedupedRows = rawRows.filter((row) => {
+      if (seenIds.has(row.id)) return false;
+      seenIds.add(row.id);
+
+      // In Explore, collapse identical broadcast Admin Notices into 1 card
+      if (scope === "explore" && row.category === "notice" && (!body.collegeFilter || body.collegeFilter === "all")) {
+        const key = `${row.author_name}:${row.content}`;
+        if (seenBroadcasts.has(key)) return false;
+        seenBroadcasts.add(key);
+      }
+      return true;
+    });
+
+    const items = dedupedRows.slice(0, limit);
+    const hasMore = dedupedRows.length > limit;
 
     let nextCursor: string | null = null;
     if (hasMore && items.length > 0) {

@@ -64,9 +64,9 @@ serve(async (req) => {
     const rawAuthor = typeof body.authorName === "string" ? body.authorName.trim() : "";
     const authorName = rawAuthor ? rawAuthor.slice(0, 28) : "Anonymous";
     if (rawAuthor) {
-      const authorMod = moderateText(rawAuthor);
+      const authorMod = moderateText(rawAuthor, { isShortLabel: true });
       if (authorMod.decision !== "approved") {
-        return errorResponse(req, "INVALID_NAME", "Please choose a respectful display name.", 422);
+        return errorResponse(req, "INVALID_NAME", authorMod.reason ?? "Please choose a respectful display name.", 422);
       }
     }
 
@@ -80,9 +80,9 @@ serve(async (req) => {
 
       if (cleanOpts.length >= 2) {
         for (const opt of cleanOpts) {
-          const optMod = moderateText(opt);
+          const optMod = moderateText(opt, { isShortLabel: true });
           if (optMod.decision === "rejected") {
-            return errorResponse(req, "INVALID_POLL", "Poll option violates campus rules.", 422);
+            return errorResponse(req, "INVALID_POLL", optMod.reason ?? "Poll option violates campus rules.", 422);
           }
         }
         pollPayload = {

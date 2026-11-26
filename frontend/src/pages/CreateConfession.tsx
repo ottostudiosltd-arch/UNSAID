@@ -1,9 +1,10 @@
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import { ArrowLeft, BarChart3, Plus, Send, Trash2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { AppShell } from "../components/AppShell";
 import { CharacterCounter } from "../components/CharacterCounter";
 import { useCampusSession } from "../hooks/useCampusSession";
+import { checkContentAllowed } from "../lib/moderation";
 import { confessionSchema } from "../lib/validation";
 import { submitConfession } from "../services/confessionService";
 import {
@@ -39,6 +40,7 @@ export function CreateConfession() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pendingNotice, setPendingNotice] = useState<string | null>(null);
+  const submitLockRef = useRef(false);
 
   const meta = CATEGORY_META[category];
 
@@ -60,6 +62,8 @@ export function CreateConfession() {
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
+    if (submitLockRef.current) return;
+
     setError(null);
     setPendingNotice(null);
 
@@ -84,6 +88,31 @@ export function CreateConfession() {
       return;
     }
 
+    const textMod = checkContentAllowed(parsed.data.text);
+    if (!textMod.ok) {
+      setError(textMod.message);
+      return;
+    }
+
+    if (parsed.data.authorName) {
+      const nameMod = checkContentAllowed(parsed.data.authorName, { isShortLabel: true });
+      if (!nameMod.ok) {
+        setError(nameMod.message);
+        return;
+      }
+    }
+
+    if (parsed.data.pollOptions) {
+      for (const opt of parsed.data.pollOptions) {
+        const optMod = checkContentAllowed(opt, { isShortLabel: true });
+        if (!optMod.ok) {
+          setError(optMod.message);
+          return;
+        }
+      }
+    }
+
+    submitLockRef.current = true;
     setSubmitting(true);
     try {
       const res = await submitConfession({
@@ -105,6 +134,7 @@ export function CreateConfession() {
         err instanceof Error ? err.message : "Could not submit confession.",
       );
     } finally {
+      submitLockRef.current = false;
       setSubmitting(false);
     }
   }

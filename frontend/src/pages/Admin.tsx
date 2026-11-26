@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import {
   BarChart3,
   Check,
@@ -53,6 +53,7 @@ export function Admin() {
   const [includePoll, setIncludePoll] = useState(false);
   const [pollOptions, setPollOptions] = useState<string[]>(["", ""]);
   const [posting, setPosting] = useState(false);
+  const publishLockRef = useRef(false);
 
   // All posts filter
   const [collegeFilter, setCollegeFilter] = useState("all");
@@ -134,6 +135,7 @@ export function Admin() {
 
   async function handleAdminCreatePost(e: FormEvent) {
     e.preventDefault();
+    if (publishLockRef.current) return;
     setAuthError(null);
     setStatusMsg(null);
 
@@ -155,6 +157,7 @@ export function Admin() {
       return;
     }
 
+    publishLockRef.current = true;
     setPosting(true);
     try {
       await runAdminAction({
@@ -174,6 +177,7 @@ export function Admin() {
     } catch (err) {
       setAuthError(err instanceof Error ? err.message : "Failed to publish notice.");
     } finally {
+      publishLockRef.current = false;
       setPosting(false);
     }
   }
