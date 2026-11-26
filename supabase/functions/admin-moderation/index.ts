@@ -168,23 +168,26 @@ serve(async (req) => {
         );
       }
 
-      let targetColleges: Array<{ id: string; code: string | null; name: string; short_name: string | null }> = [];
+      let targetCollege: { id: string; code: string | null; name: string; short_name: string | null } | null = null;
       if (isAllColleges) {
-        const { data: list } = await supabase
+        const { data: firstCollege } = await supabase
           .from("colleges")
           .select("id, code, name, short_name")
-          .eq("is_active", true);
-        targetColleges = list ?? [];
+          .eq("is_active", true)
+          .order("code", { ascending: true })
+          .limit(1)
+          .maybeSingle();
+        targetCollege = firstCollege;
       } else {
         const { data: single } = await supabase
           .from("colleges")
           .select("id, code, name, short_name")
           .eq("id", collegeId)
           .maybeSingle();
-        if (single) targetColleges = [single];
+        targetCollege = single;
       }
 
-      if (targetColleges.length === 0) {
+      if (!targetCollege) {
         return errorResponse(req, "NOT_FOUND", "Selected college not found.", 404);
       }
 
@@ -234,26 +237,26 @@ serve(async (req) => {
         }
       }
 
-      const rowsToInsert = targetColleges.map((c) => ({
-        college_id: c.id,
-        college_code: c.code ?? "",
-        college_name: c.short_name ?? c.name,
-        author_name: authorName,
-        category: "notice",
-        vibe,
-        content: text,
-        poll: pollPayload,
-        status: "approved",
-        session_hash: `admin:${userData.user.id}`,
-        content_hash: contentHash,
-      }));
-
       const { data: inserted, error: insertError } = await supabase
         .from("confessions")
-        .insert(rowsToInsert)
-        .select("id, college_id");
+        .insert({
+          college_id: targetCollege.id,
+          college_code: isAllColleges ? "ALL" : (targetCollege.code ?? ""),
+          college_name: isAllColleges ? "All Campuses" : (targetCollege.short_name ?? targetCollege.name),
+          author_name: authorName,
+          category: "notice",
+          is_global: isAllColleges,
+          vibe,
+          content: text,
+          poll: pollPayload,
+          status: "approved",
+          session_hash: `admin:${userData.user.id}`,
+          content_hash: contentHash,
+        })
+        .select("id, college_id")
+        .single();
 
-      if (insertError || !inserted || inserted.length === 0) {
+      if (insertError || !inserted) {
         return errorResponse(req, "INSERT_FAILED", "Could not publish admin notice.", 500);
       }
 
@@ -261,15 +264,15 @@ serve(async (req) => {
         admin_user_id: userData.user.id,
         action: "admin_create_confession",
         target_type: "notice",
-        target_id: inserted[0].id,
-        college_id: isAllColleges ? null : inserted[0].college_id,
+        target_id: inserted.id,
+        college_id: isAllColleges ? null : inserted.college_id,
         note: (isAllColleges
-          ? `Admin Notice published to all ${inserted.length} colleges`
-          : `Admin Notice published to ${targetColleges[0].code ?? targetColleges[0].name}`
+          ? "Global Admin Notice published to all campuses (single row)"
+          : `Admin Notice published to ${targetCollege.code ?? targetCollege.name}`
         ).slice(0, 250),
       });
 
-      return jsonResponse(req, { ok: true, count: inserted.length }, 201);
+      return jsonResponse(req, { ok: true, id: inserted.id }, 201);
     }
 
     if (action === "delete_confession") {

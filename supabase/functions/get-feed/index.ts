@@ -76,9 +76,10 @@ serve(async (req) => {
       .eq("status", "approved");
 
     if (scope === "campus") {
-      query = query.eq("college_id", tokenPayload.collegeId);
+      query = query.or(`college_id.eq.${tokenPayload.collegeId},is_global.eq.true`);
     } else if (body.collegeFilter && body.collegeFilter !== "all") {
-      query = query.eq("college_code", body.collegeFilter.trim().toUpperCase());
+      const code = body.collegeFilter.trim().toUpperCase();
+      query = query.or(`college_code.eq.${code},is_global.eq.true`);
     }
 
     if (category !== "all") {
