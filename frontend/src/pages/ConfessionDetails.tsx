@@ -150,7 +150,7 @@ export function ConfessionDetails() {
       <div className="mb-4 flex items-center justify-between gap-2">
         <Link
           to="/feed"
-          className="inline-flex items-center gap-2 rounded-full border border-white bg-white/90 px-3.5 py-2 text-xs font-bold text-ink shadow-sm hover:bg-pastel-lavender/60"
+          className="inline-flex items-center gap-2 rounded-full border border-white bg-white/90 px-3.5 py-2 text-xs font-bold text-ink shadow-sm hover:bg-pastel-lavender/60 dark:border-white/15 dark:bg-[#1B1829] dark:text-[#F4F1FA] dark:hover:bg-[#2A2442]"
         >
           <ArrowLeft className="h-4 w-4" />
           <span>Back to Feed</span>
@@ -163,8 +163,8 @@ export function ConfessionDetails() {
               onClick={() => toggleSave(confession.id)}
               className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-bold transition ${
                 saved
-                  ? "border-pastel-lavenderDeep bg-pastel-lavender text-[#5D37B8]"
-                  : "border-white bg-white/90 text-ink/75"
+                  ? "border-pastel-lavenderDeep bg-pastel-lavender text-[#5D37B8] dark:border-[#8E63F3] dark:bg-[#2E244F] dark:text-[#C4B5FD]"
+                  : "border-white bg-white/90 text-ink/75 dark:border-white/15 dark:bg-[#1B1829] dark:text-[#D5CEE6]"
               }`}
             >
               <Bookmark className="h-3.5 w-3.5" />
@@ -172,7 +172,7 @@ export function ConfessionDetails() {
             </button>
             <Link
               to={`/report/confession/${confession.id}`}
-              className="inline-flex items-center gap-1.5 rounded-full border border-white bg-white/90 px-3 py-1.5 text-xs font-bold text-[#C81E4B] hover:bg-[#FFE4EC]"
+              className="inline-flex items-center gap-1.5 rounded-full border border-white bg-white/90 px-3 py-1.5 text-xs font-bold text-[#C81E4B] hover:bg-[#FFE4EC] dark:border-white/15 dark:bg-[#1B1829] dark:text-[#FF8EAE] dark:hover:bg-[#3A1C2A]"
             >
               <Flag className="h-3.5 w-3.5" />
               <span>Report</span>
@@ -182,9 +182,9 @@ export function ConfessionDetails() {
       </div>
 
       {loading ? (
-        <div className="h-52 animate-pulse rounded-[24px] border border-white bg-white/80" />
+        <div className="h-52 animate-pulse rounded-[24px] border border-white bg-white/80 dark:border-white/10 dark:bg-[#1B1829]/80" />
       ) : error || !confession ? (
-        <div className="rounded-[24px] border border-[#FFC4D4] bg-[#FFE8EF] p-6 text-center text-sm font-bold text-[#B81D48]">
+        <div className="rounded-[24px] border border-[#FFC4D4] bg-[#FFE8EF] p-6 text-center text-sm font-bold text-[#B81D48] dark:border-[#6B253B] dark:bg-[#3A1724] dark:text-[#FF8EAE]">
           {error ?? "Confession not found."}
         </div>
       ) : (
@@ -201,32 +201,32 @@ export function ConfessionDetails() {
                 <span>{meta.emoji}</span>
               </span>
 
-              <span className="inline-flex items-center gap-1 rounded-full bg-white/80 px-2.5 py-0.5 text-xs font-bold text-ink">
+              <span className="inline-flex items-center gap-1 rounded-full bg-white/80 px-2.5 py-0.5 text-xs font-bold text-ink dark:bg-white/10 dark:text-[#F4F1FA]">
                 <span className="text-[11px]">
                   {confession.category === "notice" ? "🛡️" : "🐱"}
                 </span>
                 <span>{confession.author_name || "Anonymous"}</span>
               </span>
 
-              <span className="text-xs font-semibold text-muted">
+              <span className="text-xs font-semibold text-muted dark:text-[#A49DBB]">
                 {formatRelativeTime(confession.created_at)}
               </span>
 
-              <span className="inline-flex items-center gap-1 rounded-full border border-white bg-white/85 px-2.5 py-0.5 text-[11px] font-extrabold text-[#5D37B8]">
+              <span className="inline-flex items-center gap-1 rounded-full border border-white bg-white/85 px-2.5 py-0.5 text-[11px] font-extrabold text-[#5D37B8] dark:border-white/15 dark:bg-white/10 dark:text-[#C4B5FD]">
                 <span>{confession.college_code}</span>
                 <span>•</span>
                 <span>{confession.college_name}</span>
               </span>
             </div>
 
-            <p className="relative z-10 mt-4 max-w-[74%] whitespace-pre-wrap break-words font-display text-xl font-semibold leading-snug text-ink">
+            <p className="relative z-10 mt-4 max-w-[74%] whitespace-pre-wrap break-words font-display text-xl font-semibold leading-snug text-ink dark:text-[#F4F1FA]">
               {confession.content}
             </p>
 
             {confession.poll && confession.poll.options.length >= 2 && (
-              <div className="relative z-10 mt-4 max-w-[72%] space-y-1.5 rounded-2xl border border-white/90 bg-white/75 p-3.5">
+              <div className="relative z-10 mt-4 max-w-[72%] space-y-1.5 rounded-2xl border border-white/90 bg-white/75 p-3.5 dark:border-white/10 dark:bg-black/25">
                 {confession.poll.question && (
-                  <p className="text-xs font-extrabold text-ink">
+                  <p className="text-xs font-extrabold text-ink dark:text-[#F4F1FA]">
                     {confession.poll.question}
                   </p>
                 )}
@@ -241,22 +241,22 @@ export function ConfessionDetails() {
                       onClick={() => void handleVotePoll(opt.id)}
                       className={`relative w-full overflow-hidden rounded-xl border px-3 py-2 text-left text-xs font-bold transition ${
                         isSelected
-                          ? "border-pastel-lavenderDeep bg-pastel-lavender/60 text-ink"
-                          : "border-[#EDE6FA] bg-white/90 text-ink/85 hover:border-pastel-lavenderDeep/60"
+                          ? "border-pastel-lavenderDeep bg-pastel-lavender/60 text-ink dark:border-[#8E63F3] dark:bg-[#312554] dark:text-white"
+                          : "border-[#EDE6FA] bg-white/90 text-ink/85 hover:border-pastel-lavenderDeep/60 dark:border-white/10 dark:bg-[#1A1727]/90 dark:text-[#EBE6F7]"
                       }`}
                     >
                       <span
-                        className="pointer-events-none absolute inset-y-0 left-0 bg-pastel-lavender/70 transition-all duration-300"
+                        className="pointer-events-none absolute inset-y-0 left-0 bg-pastel-lavender/70 transition-all duration-300 dark:bg-[#8E63F3]/35"
                         style={{ width: `${votedOptionId ? pct : 0}%` }}
                       />
                       <span className="relative z-10 flex items-center justify-between gap-2">
                         <span className="inline-flex items-center gap-1.5">
                           {isSelected && (
-                            <CheckCircle2 className="h-3.5 w-3.5 text-[#5D37B8]" />
+                            <CheckCircle2 className="h-3.5 w-3.5 text-[#5D37B8] dark:text-[#C4B5FD]" />
                           )}
                           <span>{opt.label}</span>
                         </span>
-                        <span className="tabular-nums text-[11px] text-muted">
+                        <span className="tabular-nums text-[11px] text-muted dark:text-[#B4ADC8]">
                           {votedOptionId ? `${pct}% (${opt.votes})` : `${opt.votes}`}
                         </span>
                       </span>
@@ -278,7 +278,9 @@ export function ConfessionDetails() {
                 type="button"
                 onClick={() => void handleLike()}
                 className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 transition ${
-                  liked ? "bg-[#FFE0EE] text-[#D81B60]" : "bg-white/75 text-ink/80"
+                  liked
+                    ? "bg-[#FFE0EE] text-[#D81B60] dark:bg-[#491D34] dark:text-[#FF84B2]"
+                    : "bg-white/75 text-ink/80 dark:bg-white/10 dark:text-[#D5CEE6]"
                 }`}
               >
                 <Heart
@@ -289,7 +291,7 @@ export function ConfessionDetails() {
                 <span>{confession.likes_count}</span>
               </button>
 
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/75 px-3 py-1.5 text-ink/80">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/75 px-3 py-1.5 text-ink/80 dark:bg-white/10 dark:text-[#D5CEE6]">
                 <MessageCircle className="h-4 w-4" />
                 <span>
                   {confession.comments_count} / {MAX_COMMENTS} comments
@@ -301,17 +303,17 @@ export function ConfessionDetails() {
           {/* Comment Composer */}
           <form
             onSubmit={handlePostComment}
-            className="rounded-[24px] border border-white bg-white/90 p-4 shadow-card"
+            className="rounded-[24px] border border-white bg-white/90 p-4 shadow-card dark:border-white/10 dark:bg-[#171522]/90"
           >
             <div className="mb-2 flex items-center justify-between">
-              <span className="text-xs font-extrabold uppercase tracking-wider text-muted">
+              <span className="text-xs font-extrabold uppercase tracking-wider text-muted dark:text-[#A49DBB]">
                 Reply Anonymously
               </span>
               <CharacterCounter current={replyText.length} max={500} />
             </div>
 
             {commentLimitReached ? (
-              <div className="rounded-2xl bg-pastel-amber/70 px-4 py-3 text-xs font-bold text-[#7A4900]">
+              <div className="rounded-2xl bg-pastel-amber/70 px-4 py-3 text-xs font-bold text-[#7A4900] dark:bg-[#3C2E14] dark:text-[#FCD34D]">
                 This confession has reached the maximum of 100 comments.
               </div>
             ) : (
@@ -322,16 +324,18 @@ export function ConfessionDetails() {
                   value={replyText}
                   onChange={(e) => setReplyText(e.target.value)}
                   placeholder="Write a kind or helpful anonymous reply..."
-                  className="w-full resize-none rounded-2xl border border-[#ECE4FA] bg-[#FCF9FF] p-3 text-sm font-medium text-ink placeholder:text-muted/60 focus:border-pastel-lavenderDeep focus:outline-none"
+                  className="w-full resize-none rounded-2xl border border-[#ECE4FA] bg-[#FCF9FF] p-3 text-sm font-medium text-ink placeholder:text-muted/60 focus:border-pastel-lavenderDeep focus:outline-none dark:border-white/15 dark:bg-[#211E30] dark:text-[#F4F1FA] dark:placeholder:text-[#8E86A6]"
                 />
                 {replyError && (
-                  <p className="mt-2 text-xs font-bold text-[#B81D48]">{replyError}</p>
+                  <p className="mt-2 text-xs font-bold text-[#B81D48] dark:text-[#FF8EAE]">
+                    {replyError}
+                  </p>
                 )}
                 <div className="mt-2.5 flex justify-end">
                   <button
                     type="submit"
                     disabled={posting || replyText.trim().length === 0}
-                    className="inline-flex items-center gap-1.5 rounded-full bg-ink px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-[#2C2742] disabled:opacity-50"
+                    className="inline-flex items-center gap-1.5 rounded-full bg-ink px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-[#2C2742] disabled:opacity-50 dark:bg-[#FF6FA9] dark:hover:bg-[#F45998]"
                   >
                     <Send className="h-3.5 w-3.5" />
                     <span>{posting ? "Posting..." : "Post Reply"}</span>
@@ -343,19 +347,19 @@ export function ConfessionDetails() {
 
           {/* Comments List */}
           <section className="space-y-3">
-            <h2 className="font-display text-base font-bold text-ink">
+            <h2 className="font-display text-base font-bold text-ink dark:text-[#F4F1FA]">
               Replies ({confession.comments_count})
             </h2>
 
             {comments.length === 0 ? (
-              <div className="rounded-2xl border border-white bg-white/80 p-6 text-center">
+              <div className="rounded-2xl border border-white bg-white/80 p-6 text-center dark:border-white/10 dark:bg-[#171522]/85">
                 <img
                   src={assetUrl("assets/mascots/quiet-paperplane.webp")}
                   alt=""
                   aria-hidden="true"
                   className="mx-auto w-36"
                 />
-                <p className="mt-1 text-xs font-bold text-muted">
+                <p className="mt-1 text-xs font-bold text-muted dark:text-[#A49DBB]">
                   No replies yet — start the conversation kindly!
                 </p>
               </div>
@@ -371,7 +375,7 @@ export function ConfessionDetails() {
                       type="button"
                       disabled={loadingMore}
                       onClick={() => void loadDetail(nextCursor, true)}
-                      className="rounded-full border border-white bg-white px-5 py-2 text-xs font-bold text-ink shadow-sm hover:bg-pastel-lavender/60"
+                      className="rounded-full border border-white bg-white px-5 py-2 text-xs font-bold text-ink shadow-sm hover:bg-pastel-lavender/60 dark:border-white/15 dark:bg-[#1B1829] dark:text-[#F4F1FA]"
                     >
                       {loadingMore ? "Loading..." : "Load more comments"}
                     </button>

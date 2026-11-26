@@ -78,36 +78,38 @@ export function Saved() {
   return (
     <AppShell college={access?.college ?? null}>
       <div className="mb-4 flex items-center gap-2.5">
-        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-pastel-lavender text-[#5D37B8]">
+        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-pastel-lavender text-[#5D37B8] dark:bg-[#2E244F] dark:text-[#C4B5FD]">
           <Bookmark className="h-4 w-4" />
         </span>
         <div>
-          <h1 className="font-display text-2xl font-bold text-ink">Saved Posts</h1>
-          <p className="text-xs font-semibold text-muted">
+          <h1 className="font-display text-2xl font-bold text-ink dark:text-[#F4F1FA]">
+            Saved Posts
+          </h1>
+          <p className="text-xs font-semibold text-muted dark:text-[#A49DBB]">
             Bookmarked on this device ({savedIds.length})
           </p>
         </div>
       </div>
 
       {loading ? (
-        <div className="h-40 animate-pulse rounded-[24px] bg-white/80" />
+        <div className="h-40 animate-pulse rounded-[24px] bg-white/80 dark:bg-[#1B1829]/80" />
       ) : items.length === 0 ? (
-        <div className="rounded-[28px] border border-white bg-white/90 p-8 text-center shadow-card">
+        <div className="rounded-[28px] border border-white bg-white/90 p-8 text-center shadow-card dark:border-white/10 dark:bg-[#171522]/90">
           <img
             src={assetUrl("assets/mascots/quiet-paperplane.webp")}
             alt=""
             aria-hidden="true"
             className="mx-auto w-44"
           />
-          <h2 className="mt-2 font-display text-lg font-bold text-ink">
+          <h2 className="mt-2 font-display text-lg font-bold text-ink dark:text-[#F4F1FA]">
             No saved confessions yet
           </h2>
-          <p className="mt-1 text-xs font-medium text-muted">
+          <p className="mt-1 text-xs font-medium text-muted dark:text-[#A49DBB]">
             Tap the ⋮ menu on any card to bookmark it.
           </p>
           <Link
             to="/feed"
-            className="mt-4 inline-flex rounded-full bg-ink px-5 py-2 text-xs font-bold text-white"
+            className="mt-4 inline-flex rounded-full bg-ink px-5 py-2 text-xs font-bold text-white dark:bg-[#FF6FA9]"
           >
             Browse Feed
           </Link>

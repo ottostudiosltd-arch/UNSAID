@@ -11,6 +11,8 @@ export type CategoryFilter = "all" | ConfessionCategory;
 export type FeedSort = "trending" | "latest" | "most_discussed";
 export type CampusVibe = "happy" | "stressed" | "excited" | "other";
 export type GenderTheme = "female" | "male";
+export type AppearanceMode = "auto" | "manual";
+export type ResolvedTheme = "light" | "dark";
 
 export interface CollegeInfo {
   id: string;
@@ -87,10 +89,11 @@ export const CATEGORY_META: Record<ConfessionCategory, CategoryMeta> = {
     id: "love",
     label: "Love",
     emoji: "♡",
-    pillBg: "bg-[#FFE2EE]",
-    pillText: "text-[#B62B66]",
-    cardBg: "bg-gradient-to-br from-[#FFF9FB] via-[#FFF6FA] to-[#FFE8F2]",
-    cardBorder: "border-[#FFD6E8]",
+    pillBg: "bg-[#FFE2EE] dark:bg-[#4A1F36]",
+    pillText: "text-[#B62B66] dark:text-[#FF9AC2]",
+    cardBg:
+      "bg-gradient-to-br from-[#FFF9FB] via-[#FFF6FA] to-[#FFE8F2] dark:from-[#291724] dark:via-[#221520] dark:to-[#1B131D]",
+    cardBorder: "border-[#FFD6E8] dark:border-[#532B45]",
     mascotSrc: assetUrl("assets/mascots/love-boy.webp"),
     mascotAlt: "Love confession illustration",
   },
@@ -98,10 +101,11 @@ export const CATEGORY_META: Record<ConfessionCategory, CategoryMeta> = {
     id: "funny",
     label: "Funny",
     emoji: "😆",
-    pillBg: "bg-[#DDF8EA]",
-    pillText: "text-[#16794F]",
-    cardBg: "bg-gradient-to-br from-[#FAFFFC] via-[#F4FDF8] to-[#E2F9EC]",
-    cardBorder: "border-[#C7F0DB]",
+    pillBg: "bg-[#DDF8EA] dark:bg-[#163B2C]",
+    pillText: "text-[#16794F] dark:text-[#6EE7B7]",
+    cardBg:
+      "bg-gradient-to-br from-[#FAFFFC] via-[#F4FDF8] to-[#E2F9EC] dark:from-[#14261F] dark:via-[#12201B] dark:to-[#101A18]",
+    cardBorder: "border-[#C7F0DB] dark:border-[#244D3D]",
     mascotSrc: assetUrl("assets/mascots/funny-cat.webp"),
     mascotAlt: "Funny cat illustration",
   },
@@ -109,10 +113,11 @@ export const CATEGORY_META: Record<ConfessionCategory, CategoryMeta> = {
     id: "college",
     label: "College",
     emoji: "🎓",
-    pillBg: "bg-[#E9E0FF]",
-    pillText: "text-[#5D37B8]",
-    cardBg: "bg-gradient-to-br from-[#FCF9FF] via-[#F7F3FF] to-[#E9F9F1]",
-    cardBorder: "border-[#E3D6FF]",
+    pillBg: "bg-[#E9E0FF] dark:bg-[#2F2452]",
+    pillText: "text-[#5D37B8] dark:text-[#C4B5FD]",
+    cardBg:
+      "bg-gradient-to-br from-[#FCF9FF] via-[#F7F3FF] to-[#E9F9F1] dark:from-[#201933] dark:via-[#1B162B] dark:to-[#161B26]",
+    cardBorder: "border-[#E3D6FF] dark:border-[#3D3163]",
     mascotSrc: assetUrl("assets/mascots/college-pizza.svg"),
     mascotAlt: "College campus illustration",
   },
@@ -120,10 +125,11 @@ export const CATEGORY_META: Record<ConfessionCategory, CategoryMeta> = {
     id: "secrets",
     label: "Secrets",
     emoji: "🔒",
-    pillBg: "bg-[#FFF0C2]",
-    pillText: "text-[#9A5B00]",
-    cardBg: "bg-gradient-to-br from-[#FFFDF7] via-[#FFF9EA] to-[#FFEDC2]",
-    cardBorder: "border-[#FDE09B]",
+    pillBg: "bg-[#FFF0C2] dark:bg-[#463313]",
+    pillText: "text-[#9A5B00] dark:text-[#FCD34D]",
+    cardBg:
+      "bg-gradient-to-br from-[#FFFDF7] via-[#FFF9EA] to-[#FFEDC2] dark:from-[#282013] dark:via-[#221B11] dark:to-[#1B1611]",
+    cardBorder: "border-[#FDE09B] dark:border-[#523F1E]",
     mascotSrc: assetUrl("assets/mascots/secrets-lock.svg"),
     mascotAlt: "Secrets padlock illustration",
   },
@@ -131,10 +137,11 @@ export const CATEGORY_META: Record<ConfessionCategory, CategoryMeta> = {
     id: "thoughts",
     label: "Thoughts",
     emoji: "💭",
-    pillBg: "bg-[#EDE4FF]",
-    pillText: "text-[#5B3EB0]",
-    cardBg: "bg-gradient-to-br from-[#FDFBFF] via-[#F7F2FF] to-[#EDE2FF]",
-    cardBorder: "border-[#DFCEFF]",
+    pillBg: "bg-[#EDE4FF] dark:bg-[#2E244F]",
+    pillText: "text-[#5B3EB0] dark:text-[#C4B5FD]",
+    cardBg:
+      "bg-gradient-to-br from-[#FDFBFF] via-[#F7F2FF] to-[#EDE2FF] dark:from-[#1F1A31] dark:via-[#1A1629] dark:to-[#161322]",
+    cardBorder: "border-[#DFCEFF] dark:border-[#3B305E]",
     mascotSrc: assetUrl("assets/mascots/thoughts-girl.webp"),
     mascotAlt: "Thoughts illustration",
   },
@@ -142,10 +149,11 @@ export const CATEGORY_META: Record<ConfessionCategory, CategoryMeta> = {
     id: "notice",
     label: "Admin Notice",
     emoji: "📢",
-    pillBg: "bg-[#DCEEFF]",
-    pillText: "text-[#1D4ED8]",
-    cardBg: "bg-gradient-to-br from-[#F7FBFF] via-[#EFF6FF] to-[#DFF0FF]",
-    cardBorder: "border-[#BFDBFE]",
+    pillBg: "bg-[#DCEEFF] dark:bg-[#193052]",
+    pillText: "text-[#1D4ED8] dark:text-[#93C5FD]",
+    cardBg:
+      "bg-gradient-to-br from-[#F7FBFF] via-[#EFF6FF] to-[#DFF0FF] dark:from-[#152134] dark:via-[#131C2D] dark:to-[#101724]",
+    cardBorder: "border-[#BFDBFE] dark:border-[#26426B]",
     mascotSrc: assetUrl("assets/mascots/admin-notice.webp"),
     mascotAlt: "Official Admin Notice illustration",
   },

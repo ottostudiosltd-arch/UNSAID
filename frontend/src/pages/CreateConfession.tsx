@@ -144,15 +144,15 @@ export function CreateConfession() {
       <div className="mb-4 flex items-center gap-3">
         <Link
           to="/feed"
-          className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white bg-white/90 text-ink shadow-sm hover:bg-pastel-lavender/60"
+          className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white bg-white/90 text-ink shadow-sm hover:bg-pastel-lavender/60 dark:border-white/15 dark:bg-[#1B1829] dark:text-[#F4F1FA] dark:hover:bg-[#2A2442]"
         >
           <ArrowLeft className="h-4 w-4" />
         </Link>
         <div>
-          <h1 className="font-display text-2xl font-bold text-ink">
+          <h1 className="font-display text-2xl font-bold text-ink dark:text-[#F4F1FA]">
             Write a Confession
           </h1>
-          <p className="text-xs font-semibold text-muted">
+          <p className="text-xs font-semibold text-muted dark:text-[#A49DBB]">
             Posting to {access?.college.code} • {access?.college.name ?? "your campus"}
           </p>
         </div>
@@ -164,7 +164,7 @@ export function CreateConfession() {
       >
         {/* Category Selector */}
         <div>
-          <label className="text-xs font-extrabold uppercase tracking-wider text-muted">
+          <label className="text-xs font-extrabold uppercase tracking-wider text-muted dark:text-[#A49DBB]">
             Pick a Category
           </label>
           <div className="mt-2 flex flex-wrap gap-2">
@@ -178,8 +178,8 @@ export function CreateConfession() {
                   onClick={() => setCategory(cat)}
                   className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-bold transition ${
                     active
-                      ? `${item.pillBg} ${item.pillText} border-ink/30 ring-2 ring-ink/15`
-                      : "border-white bg-white/80 text-ink/75 hover:bg-white"
+                      ? `${item.pillBg} ${item.pillText} border-ink/30 ring-2 ring-ink/15 dark:border-white/30 dark:ring-white/20`
+                      : "border-white bg-white/80 text-ink/75 hover:bg-white dark:border-white/10 dark:bg-white/10 dark:text-[#DED8F0] dark:hover:bg-white/15"
                   }`}
                 >
                   <span>{item.label}</span>
@@ -195,7 +195,7 @@ export function CreateConfession() {
           <div>
             <label
               htmlFor="author-name"
-              className="text-xs font-extrabold uppercase tracking-wider text-muted"
+              className="text-xs font-extrabold uppercase tracking-wider text-muted dark:text-[#A49DBB]"
             >
               Name (optional)
             </label>
@@ -206,12 +206,12 @@ export function CreateConfession() {
               value={authorName}
               onChange={(e) => setAuthorName(e.target.value)}
               placeholder="Anonymous (leave blank)"
-              className="mt-1.5 w-full rounded-2xl border border-white/90 bg-white/90 px-3.5 py-2 text-xs font-bold text-ink placeholder:font-medium placeholder:text-muted/65 focus:border-pastel-lavenderDeep focus:outline-none"
+              className="mt-1.5 w-full rounded-2xl border border-white/90 bg-white/90 px-3.5 py-2 text-xs font-bold text-ink placeholder:font-medium placeholder:text-muted/65 focus:border-pastel-lavenderDeep focus:outline-none dark:border-white/15 dark:bg-[#161422]/90 dark:text-[#F4F1FA] dark:placeholder:text-[#8E86A6]"
             />
           </div>
 
           <div>
-            <label className="text-xs font-extrabold uppercase tracking-wider text-muted">
+            <label className="text-xs font-extrabold uppercase tracking-wider text-muted dark:text-[#A49DBB]">
               Campus Mood
             </label>
             <div className="mt-1.5 flex flex-wrap gap-1.5">
@@ -222,8 +222,8 @@ export function CreateConfession() {
                   onClick={() => setVibe(v.id)}
                   className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1.5 text-xs font-bold transition ${
                     vibe === v.id
-                      ? "border-ink bg-ink text-white"
-                      : "border-white bg-white/80 text-ink/75 hover:bg-white"
+                      ? "border-ink bg-ink text-white dark:border-[#FF6FA9] dark:bg-[#FF6FA9]"
+                      : "border-white bg-white/80 text-ink/75 hover:bg-white dark:border-white/10 dark:bg-white/10 dark:text-[#DED8F0] dark:hover:bg-white/15"
                   }`}
                 >
                   <span>{v.emoji}</span>
@@ -239,7 +239,7 @@ export function CreateConfession() {
           <div className="mb-2 flex items-center justify-between">
             <label
               htmlFor="confession-text"
-              className="text-xs font-extrabold uppercase tracking-wider text-muted"
+              className="text-xs font-extrabold uppercase tracking-wider text-muted dark:text-[#A49DBB]"
             >
               Your Story
             </label>
@@ -254,7 +254,7 @@ export function CreateConfession() {
               value={text}
               onChange={(e) => setText(e.target.value)}
               placeholder="What's been on your mind lately on campus?"
-              className="w-full resize-none rounded-2xl border border-white/90 bg-white/90 p-4 pr-20 text-base font-medium text-ink shadow-inner placeholder:text-muted/60 focus:border-pastel-lavenderDeep focus:outline-none focus:ring-4 focus:ring-pastel-lavender/50"
+              className="w-full resize-none rounded-2xl border border-white/90 bg-white/90 p-4 pr-20 text-base font-medium text-ink shadow-inner placeholder:text-muted/60 focus:border-pastel-lavenderDeep focus:outline-none focus:ring-4 focus:ring-pastel-lavender/50 dark:border-white/15 dark:bg-[#14121F]/90 dark:text-[#F4F1FA] dark:placeholder:text-[#8E86A6] dark:focus:ring-[#8E63F3]/25"
             />
             <img
               src={meta.mascotSrc}
@@ -266,10 +266,10 @@ export function CreateConfession() {
         </div>
 
         {/* Poll Builder Toggle */}
-        <div className="mt-4 rounded-2xl border border-white/90 bg-white/75 p-3.5">
+        <div className="mt-4 rounded-2xl border border-white/90 bg-white/75 p-3.5 dark:border-white/10 dark:bg-black/25">
           <div className="flex items-center justify-between">
-            <span className="inline-flex items-center gap-2 text-xs font-extrabold text-ink">
-              <BarChart3 className="h-4 w-4 text-[#5D37B8]" />
+            <span className="inline-flex items-center gap-2 text-xs font-extrabold text-ink dark:text-[#F4F1FA]">
+              <BarChart3 className="h-4 w-4 text-[#5D37B8] dark:text-[#A78BFA]" />
               <span>Attach a Campus Poll (everyone can vote)</span>
             </span>
             <button
@@ -277,8 +277,8 @@ export function CreateConfession() {
               onClick={() => setIncludePoll((prev) => !prev)}
               className={`rounded-full px-3 py-1 text-xs font-bold transition ${
                 includePoll
-                  ? "bg-ink text-white"
-                  : "bg-pastel-lavender text-[#5D37B8]"
+                  ? "bg-ink text-white dark:bg-[#FF6FA9]"
+                  : "bg-pastel-lavender text-[#5D37B8] dark:bg-[#2E244F] dark:text-[#C4B5FD]"
               }`}
             >
               {includePoll ? "Remove Poll" : "+ Add Poll"}
@@ -295,14 +295,14 @@ export function CreateConfession() {
                     value={opt}
                     onChange={(e) => handlePollOptionChange(idx, e.target.value)}
                     placeholder={`Option ${idx + 1}`}
-                    className="flex-1 rounded-xl border border-[#E6DCFB] bg-white px-3 py-2 text-xs font-bold text-ink focus:border-pastel-lavenderDeep focus:outline-none"
+                    className="flex-1 rounded-xl border border-[#E6DCFB] bg-white px-3 py-2 text-xs font-bold text-ink focus:border-pastel-lavenderDeep focus:outline-none dark:border-white/15 dark:bg-[#191625] dark:text-[#F4F1FA] dark:placeholder:text-[#8E86A6]"
                   />
                   {pollOptions.length > 2 && (
                     <button
                       type="button"
                       onClick={() => removePollOption(idx)}
                       aria-label="Remove option"
-                      className="rounded-lg p-1.5 text-muted hover:bg-[#FFE4EC] hover:text-[#C81E4B]"
+                      className="rounded-lg p-1.5 text-muted hover:bg-[#FFE4EC] hover:text-[#C81E4B] dark:text-[#A49DBB] dark:hover:bg-[#3A1C2A] dark:hover:text-[#FF8EAE]"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>
@@ -314,7 +314,7 @@ export function CreateConfession() {
                 <button
                   type="button"
                   onClick={addPollOption}
-                  className="inline-flex items-center gap-1 rounded-full bg-pastel-lavender/70 px-3 py-1 text-[11px] font-bold text-[#5D37B8]"
+                  className="inline-flex items-center gap-1 rounded-full bg-pastel-lavender/70 px-3 py-1 text-[11px] font-bold text-[#5D37B8] dark:bg-[#2E244F] dark:text-[#C4B5FD]"
                 >
                   <Plus className="h-3 w-3" />
                   <span>Add option</span>
@@ -327,14 +327,14 @@ export function CreateConfession() {
         {error && (
           <div
             role="alert"
-            className="mt-4 rounded-2xl border border-[#FFC4D4] bg-[#FFE8EF] px-4 py-2.5 text-xs font-bold text-[#B81D48]"
+            className="mt-4 rounded-2xl border border-[#FFC4D4] bg-[#FFE8EF] px-4 py-2.5 text-xs font-bold text-[#B81D48] dark:border-[#6B253B] dark:bg-[#3A1724] dark:text-[#FF8EAE]"
           >
             {error}
           </div>
         )}
 
         {pendingNotice && (
-          <div className="mt-4 rounded-2xl border border-[#FCD36D] bg-pastel-amber px-4 py-3 text-xs font-bold text-[#7A4900]">
+          <div className="mt-4 rounded-2xl border border-[#FCD36D] bg-pastel-amber px-4 py-3 text-xs font-bold text-[#7A4900] dark:border-[#6B4E1B] dark:bg-[#3C2E14] dark:text-[#FCD34D]">
             {pendingNotice}
           </div>
         )}
@@ -343,7 +343,7 @@ export function CreateConfession() {
           <button
             type="submit"
             disabled={submitting || text.trim().length < 5}
-            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-ink px-6 py-3 font-display text-sm font-bold text-white shadow-pill transition hover:bg-[#2C2742] disabled:opacity-50"
+            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-ink px-6 py-3 font-display text-sm font-bold text-white shadow-pill transition hover:bg-[#2C2742] disabled:opacity-50 dark:bg-[#FF6FA9] dark:hover:bg-[#F45998]"
           >
             <Send className="h-4 w-4" />
             <span>{submitting ? "Sending..." : "Post Confession"}</span>

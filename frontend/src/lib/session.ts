@@ -1,9 +1,16 @@
-import type { CollegeInfo, GenderTheme } from "../types/confession";
+import type {
+  AppearanceMode,
+  CollegeInfo,
+  GenderTheme,
+  ResolvedTheme,
+} from "../types/confession";
 
 const SESSION_ID_KEY = "unsaid_anon_session_v1";
 const CAMPUS_AUTH_KEY = "unsaid_campus_access_v2";
 const SAVED_IDS_KEY = "unsaid_saved_confessions_v1";
 const GENDER_THEME_KEY = "unsaid_gender_theme_v1";
+const APPEARANCE_MODE_KEY = "unsaid_appearance_mode_v1";
+const MANUAL_THEME_KEY = "unsaid_manual_theme_v1";
 const POLL_VOTES_KEY = "unsaid_poll_votes_v1";
 
 export interface CampusAccessState {
@@ -90,6 +97,64 @@ export function getGenderTheme(): GenderTheme {
 
 export function setGenderTheme(theme: GenderTheme): void {
   localStorage.setItem(GENDER_THEME_KEY, theme);
+}
+
+export function getAppearanceMode(): AppearanceMode {
+  try {
+    const raw = localStorage.getItem(APPEARANCE_MODE_KEY);
+    return raw === "manual" ? "manual" : "auto";
+  } catch {
+    return "auto";
+  }
+}
+
+export function setAppearanceMode(mode: AppearanceMode): void {
+  localStorage.setItem(APPEARANCE_MODE_KEY, mode);
+}
+
+export function getManualTheme(): ResolvedTheme {
+  try {
+    const raw = localStorage.getItem(MANUAL_THEME_KEY);
+    return raw === "dark" ? "dark" : "light";
+  } catch {
+    return "light";
+  }
+}
+
+export function setManualTheme(theme: ResolvedTheme): void {
+  localStorage.setItem(MANUAL_THEME_KEY, theme);
+}
+
+export function getSystemPrefersDark(): boolean {
+  if (typeof window === "undefined" || !window.matchMedia) return false;
+  return window.matchMedia("(prefers-color-scheme: dark)").matches;
+}
+
+export function resolveTheme(
+  mode: AppearanceMode,
+  manualTheme: ResolvedTheme,
+): ResolvedTheme {
+  if (mode === "manual") return manualTheme;
+  return getSystemPrefersDark() ? "dark" : "light";
+}
+
+export function applyDocumentTheme(resolved: ResolvedTheme): void {
+  if (typeof document === "undefined") return;
+  const isDark = resolved === "dark";
+  document.documentElement.classList.toggle("dark", isDark);
+  document.documentElement.style.colorScheme = isDark ? "dark" : "light";
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) {
+    meta.setAttribute("content", isDark ? "#0E0D16" : "#FDF4E4");
+  }
+}
+
+export function syncDocumentThemeFromStorage(): ResolvedTheme {
+  const mode = getAppearanceMode();
+  const manual = getManualTheme();
+  const resolved = resolveTheme(mode, manual);
+  applyDocumentTheme(resolved);
+  return resolved;
 }
 
 export function getPollVotesMap(): Record<string, string> {

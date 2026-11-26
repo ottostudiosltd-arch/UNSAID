@@ -19,7 +19,7 @@ const Saved = lazy(() => import("./pages/Saved").then((m) => ({ default: m.Saved
 function PageLoader() {
   return (
     <div className="flex min-h-screen items-center justify-center">
-      <div className="rounded-full border border-white bg-white/90 px-5 py-2.5 text-sm font-bold text-ink shadow-card">
+      <div className="rounded-full border border-white bg-white/90 px-5 py-2.5 text-sm font-bold text-ink shadow-card dark:border-white/15 dark:bg-[#1B1829] dark:text-[#F4F1FA]">
         Loading UNSAID...
       </div>
     </div>

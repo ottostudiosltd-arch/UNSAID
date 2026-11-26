@@ -87,10 +87,13 @@ export function AppShell({
       {/* MOBILE TOP HEADER (< lg) */}
       <header className="relative flex items-center justify-between px-4 pb-2 pt-4 lg:hidden">
         <div>
-          <Link to="/feed" className="block font-display text-3xl font-bold tracking-tight text-ink">
+          <Link
+            to="/feed"
+            className="block font-display text-3xl font-bold tracking-tight text-ink dark:text-[#F4F1FA]"
+          >
             UNSAID<span className="text-pastel-pinkDeep">.</span>
           </Link>
-          <p className="text-xs font-semibold text-muted">
+          <p className="text-xs font-semibold text-muted dark:text-[#A49DBB]">
             {college ? `${college.code} • ${college.shortName ?? college.name}` : "Your Campus. Your Stories."}
           </p>
         </div>
@@ -106,11 +109,11 @@ export function AppShell({
             type="button"
             onClick={() => setNotifOpen((prev) => !prev)}
             aria-label="Notifications"
-            className="relative flex h-10 w-10 items-center justify-center rounded-full border border-white bg-white/90 text-ink shadow-sm"
+            className="relative flex h-10 w-10 items-center justify-center rounded-full border border-white bg-white/90 text-ink shadow-sm dark:border-white/15 dark:bg-[#1B1829] dark:text-[#F4F1FA]"
           >
             <Bell className="h-5 w-5" />
             {unreadCount > 0 && (
-              <span className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full bg-pastel-pinkDeep ring-2 ring-white" />
+              <span className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full bg-pastel-pinkDeep ring-2 ring-white dark:ring-[#1B1829]" />
             )}
           </button>
         </div>
@@ -126,20 +129,20 @@ export function AppShell({
             className="pointer-events-none absolute left-1/2 top-0 z-20 w-36 -translate-x-1/2"
           />
 
-          <div className="relative flex h-full flex-col justify-between overflow-hidden rounded-[28px] border border-white bg-white/90 px-4 pb-3 pt-10 shadow-card">
+          <div className="relative flex h-full flex-col justify-between overflow-hidden rounded-[28px] border border-white bg-white/90 px-4 pb-3 pt-10 shadow-card dark:border-white/10 dark:bg-[#171522]/95">
             <div>
               <Link to="/feed" className="block text-center">
-                <span className="font-display text-3xl font-bold tracking-tight text-ink">
+                <span className="font-display text-3xl font-bold tracking-tight text-ink dark:text-[#F4F1FA]">
                   UNSAID<span className="text-pastel-pinkDeep">.</span>
                 </span>
               </Link>
-              <p className="mt-0.5 text-center text-[11px] font-semibold text-muted">
+              <p className="mt-0.5 text-center text-[11px] font-semibold text-muted dark:text-[#A49DBB]">
                 Your Campus. Your Stories.
               </p>
 
               {college && (
                 <div className="mt-3 flex items-center justify-center">
-                  <span className="inline-flex max-w-full items-center gap-1 truncate rounded-full bg-pastel-lavender/75 px-3 py-1 text-[11px] font-bold text-[#5D37B8]">
+                  <span className="inline-flex max-w-full items-center gap-1 truncate rounded-full bg-pastel-lavender/75 px-3 py-1 text-[11px] font-bold text-[#5D37B8] dark:bg-[#2E244F] dark:text-[#C4B5FD]">
                     <span>🎓</span>
                     <span className="truncate">
                       {college.code} • {college.shortName ?? college.name}
@@ -158,8 +161,8 @@ export function AppShell({
                       className={({ isActive }) =>
                         `flex items-center gap-3 rounded-2xl px-4 py-2.5 text-sm font-bold transition ${
                           isActive
-                            ? "bg-pastel-lavender text-ink shadow-sm"
-                            : "text-ink/75 hover:bg-pastel-lavender/40 hover:text-ink"
+                            ? "bg-pastel-lavender text-ink shadow-sm dark:bg-[#2C2447] dark:text-white"
+                            : "text-ink/75 hover:bg-pastel-lavender/40 hover:text-ink dark:text-[#CFC8E3] dark:hover:bg-white/10 dark:hover:text-white"
                         }`
                       }
                     >
@@ -193,11 +196,11 @@ export function AppShell({
                 type="button"
                 onClick={() => setNotifOpen((prev) => !prev)}
                 aria-label="Notifications"
-                className="relative flex h-10 w-10 items-center justify-center rounded-full border border-white bg-white/90 text-ink shadow-sm transition hover:bg-pastel-lavender/60"
+                className="relative flex h-10 w-10 items-center justify-center rounded-full border border-white bg-white/90 text-ink shadow-sm transition hover:bg-pastel-lavender/60 dark:border-white/15 dark:bg-[#1B1829] dark:text-[#F4F1FA] dark:hover:bg-[#27233B]"
               >
                 <Bell className="h-4 w-4" />
                 {unreadCount > 0 && (
-                  <span className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full bg-pastel-pinkDeep ring-2 ring-white" />
+                  <span className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full bg-pastel-pinkDeep ring-2 ring-white dark:ring-[#1B1829]" />
                 )}
               </button>
             </div>
@@ -210,19 +213,21 @@ export function AppShell({
         <aside className="hidden w-[280px] shrink-0 flex-col gap-4 xl:sticky xl:top-5 xl:flex xl:h-[calc(100vh-2.5rem)] xl:justify-between">
           <div className="space-y-4">
             {/* Campus Vibes Card */}
-            <section className="rounded-[24px] border border-white bg-white/90 p-4 shadow-card">
+            <section className="rounded-[24px] border border-white bg-white/90 p-4 shadow-card dark:border-white/10 dark:bg-[#171522]/95">
               <div className="flex items-center gap-2">
                 <span className="text-base">📊</span>
-                <h2 className="font-display text-base font-bold text-ink">Campus Vibes</h2>
+                <h2 className="font-display text-base font-bold text-ink dark:text-[#F4F1FA]">
+                  Campus Vibes
+                </h2>
               </div>
 
               <div className="mt-3.5 space-y-3 text-xs font-bold">
                 <div>
-                  <div className="mb-1 flex justify-between text-ink/85">
+                  <div className="mb-1 flex justify-between text-ink/85 dark:text-[#DFDAEE]">
                     <span>Happy</span>
                     <span className="tabular-nums">{vibes.happy}%</span>
                   </div>
-                  <div className="h-2 overflow-hidden rounded-full bg-[#ECE7F6]">
+                  <div className="h-2 overflow-hidden rounded-full bg-[#ECE7F6] dark:bg-[#28233A]">
                     <div
                       className="h-full rounded-full bg-pastel-mintDeep transition-all duration-500"
                       style={{ width: `${vibes.happy}%` }}
@@ -231,11 +236,11 @@ export function AppShell({
                 </div>
 
                 <div>
-                  <div className="mb-1 flex justify-between text-ink/85">
+                  <div className="mb-1 flex justify-between text-ink/85 dark:text-[#DFDAEE]">
                     <span>Stressed</span>
                     <span className="tabular-nums">{vibes.stressed}%</span>
                   </div>
-                  <div className="h-2 overflow-hidden rounded-full bg-[#ECE7F6]">
+                  <div className="h-2 overflow-hidden rounded-full bg-[#ECE7F6] dark:bg-[#28233A]">
                     <div
                       className="h-full rounded-full bg-pastel-pinkDeep transition-all duration-500"
                       style={{ width: `${vibes.stressed}%` }}
@@ -244,11 +249,11 @@ export function AppShell({
                 </div>
 
                 <div>
-                  <div className="mb-1 flex justify-between text-ink/85">
+                  <div className="mb-1 flex justify-between text-ink/85 dark:text-[#DFDAEE]">
                     <span>Excited</span>
                     <span className="tabular-nums">{vibes.excited}%</span>
                   </div>
-                  <div className="h-2 overflow-hidden rounded-full bg-[#ECE7F6]">
+                  <div className="h-2 overflow-hidden rounded-full bg-[#ECE7F6] dark:bg-[#28233A]">
                     <div
                       className="h-full rounded-full bg-[#FBBF24] transition-all duration-500"
                       style={{ width: `${vibes.excited}%` }}
@@ -257,11 +262,11 @@ export function AppShell({
                 </div>
 
                 <div>
-                  <div className="mb-1 flex justify-between text-ink/85">
+                  <div className="mb-1 flex justify-between text-ink/85 dark:text-[#DFDAEE]">
                     <span>Other</span>
                     <span className="tabular-nums">{vibes.other}%</span>
                   </div>
-                  <div className="h-2 overflow-hidden rounded-full bg-[#ECE7F6]">
+                  <div className="h-2 overflow-hidden rounded-full bg-[#ECE7F6] dark:bg-[#28233A]">
                     <div
                       className="h-full rounded-full bg-pastel-lavenderDeep transition-all duration-500"
                       style={{ width: `${vibes.other}%` }}
@@ -272,34 +277,36 @@ export function AppShell({
             </section>
 
             {/* Quick Access Card */}
-            <section className="rounded-[24px] border border-white bg-gradient-to-br from-[#F1E9FF] via-[#EAE0FF] to-[#E2D4FF] p-4 shadow-card">
+            <section className="rounded-[24px] border border-white bg-gradient-to-br from-[#F1E9FF] via-[#EAE0FF] to-[#E2D4FF] p-4 shadow-card dark:border-white/10 dark:from-[#211B36] dark:via-[#1B172B] dark:to-[#161324]">
               <div className="flex items-center justify-between">
-                <h2 className="font-display text-base font-bold text-ink">Quick Access</h2>
-                <Sparkles className="h-4 w-4 text-[#6B48C8]" />
+                <h2 className="font-display text-base font-bold text-ink dark:text-[#F4F1FA]">
+                  Quick Access
+                </h2>
+                <Sparkles className="h-4 w-4 text-[#6B48C8] dark:text-[#A78BFA]" />
               </div>
 
-              <div className="mt-3 space-y-1.5 text-sm font-bold text-ink/85">
+              <div className="mt-3 space-y-1.5 text-sm font-bold text-ink/85 dark:text-[#DCD6EE]">
                 <Link
                   to="/feed"
-                  className="flex items-center gap-2.5 rounded-xl px-2.5 py-2 transition hover:bg-white/60"
+                  className="flex items-center gap-2.5 rounded-xl px-2.5 py-2 transition hover:bg-white/60 dark:hover:bg-white/10"
                 >
                   <span>🎓</span>
                   <span>My Feed</span>
                 </Link>
                 <Link
                   to="/saved"
-                  className="flex items-center gap-2.5 rounded-xl px-2.5 py-2 transition hover:bg-white/60"
+                  className="flex items-center gap-2.5 rounded-xl px-2.5 py-2 transition hover:bg-white/60 dark:hover:bg-white/10"
                 >
-                  <Bookmark className="h-4 w-4 text-[#5D37B8]" />
+                  <Bookmark className="h-4 w-4 text-[#5D37B8] dark:text-[#A78BFA]" />
                   <span>Saved Posts</span>
                 </Link>
                 <button
                   type="button"
                   onClick={() => setNotifOpen(true)}
-                  className="flex w-full items-center justify-between rounded-xl px-2.5 py-2 text-left transition hover:bg-white/60"
+                  className="flex w-full items-center justify-between rounded-xl px-2.5 py-2 text-left transition hover:bg-white/60 dark:hover:bg-white/10"
                 >
                   <span className="flex items-center gap-2.5">
-                    <Bell className="h-4 w-4 text-[#5D37B8]" />
+                    <Bell className="h-4 w-4 text-[#5D37B8] dark:text-[#A78BFA]" />
                     <span>Notifications</span>
                   </span>
                   {unreadCount > 0 && (
@@ -310,9 +317,9 @@ export function AppShell({
                 </button>
                 <Link
                   to="/profile"
-                  className="flex items-center gap-2.5 rounded-xl px-2.5 py-2 transition hover:bg-white/60"
+                  className="flex items-center gap-2.5 rounded-xl px-2.5 py-2 transition hover:bg-white/60 dark:hover:bg-white/10"
                 >
-                  <Settings className="h-4 w-4 text-[#5D37B8]" />
+                  <Settings className="h-4 w-4 text-[#5D37B8] dark:text-[#A78BFA]" />
                   <span>Profile & Theme</span>
                 </Link>
               </div>
@@ -320,8 +327,8 @@ export function AppShell({
           </div>
 
           {/* Sticky Note Card */}
-          <div className="relative rounded-2xl border border-[#F5CE74] bg-[#FFE49B] px-4 py-4 shadow-card -rotate-1">
-            <p className="max-w-[72%] font-display text-sm font-bold leading-snug text-ink">
+          <div className="relative rounded-2xl border border-[#F5CE74] bg-[#FFE49B] px-4 py-4 shadow-card -rotate-1 dark:border-[#5C471E] dark:bg-[#2F2411]">
+            <p className="max-w-[72%] font-display text-sm font-bold leading-snug text-ink dark:text-[#FCE7B2]">
               Stay Anonymous.
               <br />
               Stay Kind. ❤️
@@ -339,17 +346,17 @@ export function AppShell({
       {/* NOTIFICATIONS POPOVER / MODAL */}
       {notifOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-start justify-end bg-ink/15 p-4 backdrop-blur-[2px] sm:p-6"
+          className="fixed inset-0 z-50 flex items-start justify-end bg-ink/15 p-4 backdrop-blur-[2px] dark:bg-black/50 sm:p-6"
           onClick={() => setNotifOpen(false)}
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="mt-12 w-full max-w-sm rounded-[26px] border border-white bg-white/95 p-4 shadow-shell"
+            className="mt-12 w-full max-w-sm rounded-[26px] border border-white bg-white/95 p-4 shadow-shell dark:border-white/15 dark:bg-[#191726]"
           >
-            <div className="flex items-center justify-between border-b border-[#F1EAFB] pb-3">
+            <div className="flex items-center justify-between border-b border-[#F1EAFB] pb-3 dark:border-white/10">
               <div className="flex items-center gap-2">
-                <Bell className="h-4 w-4 text-[#5D37B8]" />
-                <h3 className="font-display text-base font-bold text-ink">
+                <Bell className="h-4 w-4 text-[#5D37B8] dark:text-[#A78BFA]" />
+                <h3 className="font-display text-base font-bold text-ink dark:text-[#F4F1FA]">
                   Campus Notifications
                 </h3>
               </div>
@@ -358,7 +365,7 @@ export function AppShell({
                   <button
                     type="button"
                     onClick={handleMarkAllRead}
-                    className="inline-flex items-center gap-1 rounded-full bg-pastel-lavender px-2.5 py-1 text-[11px] font-bold text-[#5D37B8]"
+                    className="inline-flex items-center gap-1 rounded-full bg-pastel-lavender px-2.5 py-1 text-[11px] font-bold text-[#5D37B8] dark:bg-[#2E244F] dark:text-[#C4B5FD]"
                   >
                     <CheckCheck className="h-3 w-3" />
                     <span>Mark read</span>
@@ -368,7 +375,7 @@ export function AppShell({
                   type="button"
                   onClick={() => setNotifOpen(false)}
                   aria-label="Close notifications"
-                  className="flex h-7 w-7 items-center justify-center rounded-full text-muted hover:bg-pastel-lavender/50"
+                  className="flex h-7 w-7 items-center justify-center rounded-full text-muted hover:bg-pastel-lavender/50 dark:text-[#A49DBB] dark:hover:bg-white/10 dark:hover:text-white"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -377,9 +384,11 @@ export function AppShell({
 
             <div className="mt-3 max-h-80 space-y-2 overflow-y-auto">
               {notifications.length === 0 ? (
-                <div className="rounded-2xl border border-[#F3EEFA] bg-[#FCF9FF] p-5 text-center">
-                  <p className="text-xs font-bold text-ink">No new notifications</p>
-                  <p className="mt-1 text-[11px] font-medium text-muted">
+                <div className="rounded-2xl border border-[#F3EEFA] bg-[#FCF9FF] p-5 text-center dark:border-white/10 dark:bg-[#211E30]">
+                  <p className="text-xs font-bold text-ink dark:text-[#F4F1FA]">
+                    No new notifications
+                  </p>
+                  <p className="mt-1 text-[11px] font-medium text-muted dark:text-[#A49DBB]">
                     Official campus notices will appear here.
                   </p>
                 </div>
@@ -391,15 +400,21 @@ export function AppShell({
                     onClick={() => setNotifOpen(false)}
                     className={`block rounded-2xl border p-3 transition ${
                       item.unread
-                        ? "border-[#E3D6FF] bg-pastel-lavender/35"
-                        : "border-[#F3EEFA] bg-white hover:bg-[#FCF9FF]"
+                        ? "border-[#E3D6FF] bg-pastel-lavender/35 dark:border-[#493A78] dark:bg-[#292244]"
+                        : "border-[#F3EEFA] bg-white hover:bg-[#FCF9FF] dark:border-white/10 dark:bg-[#1E1B2B] dark:hover:bg-[#252136]"
                     }`}
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-xs font-extrabold text-ink">{item.title}</span>
-                      <span className="text-[10px] font-semibold text-muted">{item.timeAgo}</span>
+                      <span className="text-xs font-extrabold text-ink dark:text-[#F4F1FA]">
+                        {item.title}
+                      </span>
+                      <span className="text-[10px] font-semibold text-muted dark:text-[#A49DBB]">
+                        {item.timeAgo}
+                      </span>
                     </div>
-                    <p className="mt-1 text-xs font-medium text-muted">{item.body}</p>
+                    <p className="mt-1 text-xs font-medium text-muted dark:text-[#B9B1CE]">
+                      {item.body}
+                    </p>
                   </Link>
                 ))
               )}
@@ -409,13 +424,13 @@ export function AppShell({
       )}
 
       {/* MOBILE BOTTOM NAVIGATION (< lg) */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-[#EFE8FA] bg-white/95 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur-md lg:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-[#EFE8FA] bg-white/95 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur-md dark:border-white/10 dark:bg-[#14121E]/95 lg:hidden">
         <div className="mx-auto grid max-w-md grid-cols-5 items-end">
           <NavLink
             to="/feed"
             className={({ isActive }) =>
               `flex flex-col items-center gap-0.5 text-[11px] font-bold ${
-                isActive ? "text-pastel-pinkDeep" : "text-ink/70"
+                isActive ? "text-pastel-pinkDeep" : "text-ink/70 dark:text-[#B8B1CC]"
               }`
             }
           >
@@ -427,7 +442,7 @@ export function AppShell({
             to="/explore"
             className={({ isActive }) =>
               `flex flex-col items-center gap-0.5 text-[11px] font-bold ${
-                isActive ? "text-pastel-pinkDeep" : "text-ink/70"
+                isActive ? "text-pastel-pinkDeep" : "text-ink/70 dark:text-[#B8B1CC]"
               }`
             }
           >
@@ -437,9 +452,9 @@ export function AppShell({
 
           <Link
             to="/create"
-            className="-mt-6 flex flex-col items-center gap-0.5 text-[11px] font-bold text-ink"
+            className="-mt-6 flex flex-col items-center gap-0.5 text-[11px] font-bold text-ink dark:text-[#F4F1FA]"
           >
-            <span className="flex h-12 w-12 items-center justify-center rounded-full border-4 border-white bg-[#FF6FA9] text-white shadow-lg">
+            <span className="flex h-12 w-12 items-center justify-center rounded-full border-4 border-white bg-[#FF6FA9] text-white shadow-lg dark:border-[#14121E]">
               <Plus className="h-6 w-6" />
             </span>
             <span>Confess</span>
@@ -449,7 +464,7 @@ export function AppShell({
             to="/saved"
             className={({ isActive }) =>
               `flex flex-col items-center gap-0.5 text-[11px] font-bold ${
-                isActive ? "text-pastel-pinkDeep" : "text-ink/70"
+                isActive ? "text-pastel-pinkDeep" : "text-ink/70 dark:text-[#B8B1CC]"
               }`
             }
           >
@@ -461,7 +476,7 @@ export function AppShell({
             to="/profile"
             className={({ isActive }) =>
               `flex flex-col items-center gap-0.5 text-[11px] font-bold ${
-                isActive ? "text-pastel-pinkDeep" : "text-ink/70"
+                isActive ? "text-pastel-pinkDeep" : "text-ink/70 dark:text-[#B8B1CC]"
               }`
             }
           >

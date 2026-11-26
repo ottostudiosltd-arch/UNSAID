@@ -17,8 +17,24 @@
       rel="stylesheet"
     />
     <title>UNSAID. — Your Campus. Your Stories.</title>
+    <script>
+      (function () {
+        try {
+          var mode = localStorage.getItem("unsaid_appearance_mode_v1");
+          var manual = localStorage.getItem("unsaid_manual_theme_v1");
+          var prefersDark =
+            window.matchMedia &&
+            window.matchMedia("(prefers-color-scheme: dark)").matches;
+          var isDark = mode === "manual" ? manual === "dark" : prefersDark;
+          document.documentElement.classList.toggle("dark", isDark);
+          document.documentElement.style.colorScheme = isDark ? "dark" : "light";
+          var meta = document.querySelector('meta[name="theme-color"]');
+          if (meta) meta.setAttribute("content", isDark ? "#0E0D16" : "#FDF4E4");
+        } catch (e) {}
+      })();
+    </script>
   </head>
-  <body class="bg-cream text-ink antialiased selection:bg-pastel-pink selection:text-ink">
+  <body class="text-ink antialiased selection:bg-pastel-pink selection:text-ink dark:text-[#F4F1FA] dark:selection:bg-[#5E2B49] dark:selection:text-white">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
